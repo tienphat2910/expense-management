@@ -19,11 +19,11 @@ export const metadata: Metadata = {
   authors: [{ name: "Phat Nguyen", url: "https://phatnguyen.vercel.app" }],
   creator: "Phat Nguyen",
   publisher: "Phat Nguyen",
-  metadataBase: new URL("https://sothuchi.vercel.app"),
+  metadataBase: new URL("https://sothuchi-taupe.vercel.app/"),
   openGraph: {
     type: "website",
     locale: "vi_VN",
-    url: "https://sothuchi.vercel.app",
+    url: "https://sothuchi-taupe.vercel.app/",
     title: "Sổ thu chi cá nhân - Quản lý tài chính hiệu quả",
     description: "Ứng dụng quản lý thu chi cá nhân giúp bạn theo dõi giao dịch, quản lý ví tiền, đặt mục tiêu tiết kiệm và xem thống kê chi tiêu một cách dễ dàng và hiệu quả.",
     siteName: "Sổ thu chi cá nhân",
