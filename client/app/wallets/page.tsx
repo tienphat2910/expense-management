@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
+import toast, { Toaster } from 'react-hot-toast';
+import MoneyInput from '@/components/MoneyInput';
 import { 
   Plus, 
   Wallet as WalletIcon, 
@@ -118,12 +120,16 @@ export default function WalletsPage() {
       }
 
       if (response.success) {
+        toast.success(editingWallet ? 'Cập nhật ví thành công!' : 'Tạo ví thành công!');
         setShowModal(false);
         resetForm();
         loadWallets();
+      } else {
+        toast.error(response.message || 'Có lỗi xảy ra!');
       }
     } catch (error) {
       console.error('Error saving wallet:', error);
+      toast.error('Có lỗi xảy ra khi lưu ví!');
     }
   };
 
@@ -353,7 +359,7 @@ export default function WalletsPage() {
                   required
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-2 sm:px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                   placeholder="Ví tiền mặt"
                 />
               </div>
@@ -390,14 +396,11 @@ export default function WalletsPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Số dư ban đầu (VND)
                 </label>
-                <input
-                  type="number"
+                <MoneyInput
                   value={formData.balance}
-                  onChange={(e) => setFormData({ ...formData, balance: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  onChange={(value) => setFormData({ ...formData, balance: value })}
+                  className="w-full px-2 sm:px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                   placeholder="0"
-                  min="0"
-                  step="1000"
                 />
               </div>
 
@@ -409,7 +412,7 @@ export default function WalletsPage() {
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-2 sm:px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                   rows={3}
                   placeholder="Thêm ghi chú về ví này..."
                 />
@@ -439,6 +442,7 @@ export default function WalletsPage() {
         </div>
       )}
 
+      <Toaster position="top-right" />
       <Footer />
     </div>
   );

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import toast, { Toaster } from 'react-hot-toast';
 import { api } from '@/lib/api';
+import MoneyInput from '@/components/MoneyInput';
 import {
   ArrowLeft,
   PiggyBank,
@@ -552,7 +553,7 @@ export default function SavingsDetailPage() {
                   required
                   value={selectedWalletId}
                   onChange={(e) => setSelectedWalletId(e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-2 sm:px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                 >
                   <option value="">Chọn ví</option>
                   {wallets.map((wallet) => (
@@ -565,14 +566,11 @@ export default function SavingsDetailPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Số tiền</label>
-                <input
-                  type="number"
+                <MoneyInput
                   value={transactionAmount}
-                  onChange={(e) => setTransactionAmount(e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  onChange={(value) => setTransactionAmount(value)}
+                  className="w-full px-2 sm:px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                   placeholder="0"
-                  min="0"
-                  step="1000"
                 />
               </div>
 
@@ -629,7 +627,7 @@ export default function SavingsDetailPage() {
                   type="date"
                   value={newDeadline}
                   onChange={(e) => setNewDeadline(e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-2 sm:px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                 />
               </div>
 

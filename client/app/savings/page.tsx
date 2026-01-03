@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import toast, { Toaster } from 'react-hot-toast';
 import { api } from '@/lib/api';
+import MoneyInput from '@/components/MoneyInput';
 import {
   Plus,
   PiggyBank,
@@ -276,7 +277,7 @@ export default function SavingsPage() {
         <div className="mb-8 flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Tiết kiệm</h1>
-            <p className="text-gray-600">Quản lý mục tiêu tiết kiệm của bạn</p>
+            <p className="text-gray-600">Thêm mục tiêu tiết kiệm</p>
           </div>
           <button
             onClick={() => {
@@ -286,7 +287,7 @@ export default function SavingsPage() {
             className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             <Plus className="w-5 h-5" />
-            <span>Tạo mục tiết kiệm</span>
+            <span>Thêm mục tiêu</span>
           </button>
         </div>
 
@@ -488,7 +489,7 @@ export default function SavingsPage() {
                   required
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-2 sm:px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                   placeholder="Ví dụ: Mua laptop mới"
                 />
               </div>
@@ -498,7 +499,7 @@ export default function SavingsPage() {
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-2 sm:px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                   rows={3}
                   placeholder="Mô tả ngắn gọn..."
                 />
@@ -508,15 +509,12 @@ export default function SavingsPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Số tiền mục tiêu *
                 </label>
-                <input
-                  type="number"
+                <MoneyInput
                   required
                   value={formData.targetAmount}
-                  onChange={(e) => setFormData({ ...formData, targetAmount: e.target.value })}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  onChange={(value) => setFormData({ ...formData, targetAmount: value })}
+                  className="w-full px-2 sm:px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                   placeholder="0"
-                  min="0"
-                  step="1000"
                 />
               </div>
 
@@ -528,7 +526,7 @@ export default function SavingsPage() {
                   type="date"
                   value={formData.deadline}
                   onChange={(e) => setFormData({ ...formData, deadline: e.target.value })}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-2 sm:px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                 />
               </div>
 
@@ -614,7 +612,7 @@ export default function SavingsPage() {
                   required
                   value={selectedWalletId}
                   onChange={(e) => setSelectedWalletId(e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-2 sm:px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                 >
                   <option value="">Chọn ví</option>
                   {wallets.map((wallet) => (
@@ -627,14 +625,11 @@ export default function SavingsPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Số tiền</label>
-                <input
-                  type="number"
+                <MoneyInput
                   value={transactionAmount}
-                  onChange={(e) => setTransactionAmount(e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  onChange={(value) => setTransactionAmount(value)}
+                  className="w-full px-2 sm:px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                   placeholder="0"
-                  min="0"
-                  step="1000"
                 />
               </div>
 

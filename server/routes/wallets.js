@@ -216,8 +216,8 @@ router.post('/', async (req, res) => {
  */
 router.put('/:id', async (req, res) => {
   try {
-    // Prevent direct balance updates (should be through transactions)
-    delete req.body.balance;
+    // Allow balance updates for initial setup or corrections
+    // Note: Regular balance changes should still go through transactions
     
     const wallet = await Wallet.findByIdAndUpdate(
       req.params.id,
