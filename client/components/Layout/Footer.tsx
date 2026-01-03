@@ -11,7 +11,7 @@ export default function Footer() {
           <div>
             <h3 className="text-sm font-semibold text-gray-900 mb-4">Về chúng tôi</h3>
             <p className="text-sm text-gray-600">
-              Expense Manager giúp bạn quản lý thu chi cá nhân một cách hiệu quả và dễ dàng.
+              Sổ thu chi cá nhân giúp bạn quản lý thu chi cá nhân một cách hiệu quả và dễ dàng.
             </p>
           </div>
 
@@ -30,13 +30,18 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/budgets" className="text-sm text-gray-600 hover:text-blue-600 transition-colors">
-                  Ngân sách
+                <Link href="/wallets" className="text-sm text-gray-600 hover:text-blue-600 transition-colors">
+                  Ví
                 </Link>
               </li>
               <li>
                 <Link href="/statistics" className="text-sm text-gray-600 hover:text-blue-600 transition-colors">
                   Thống kê
+                </Link>
+              </li>
+              <li>
+                <Link href="/savings" className="text-sm text-gray-600 hover:text-blue-600 transition-colors">
+                  Tiết kiệm
                 </Link>
               </li>
             </ul>
@@ -84,9 +89,23 @@ export default function Footer() {
         {/* Bottom */}
         <div className="mt-8 pt-8 border-t border-gray-200">
           <div className="flex flex-col md:flex-row justify-between items-center">
-            <p className="text-sm text-gray-600">
-              &copy; {currentYear} Expense Manager. All rights reserved.
-            </p>
+            <div className="text-center md:text-left">
+              <p className="text-sm text-gray-600">
+                &copy; {currentYear} Expense Manager. All rights reserved.
+              </p>
+              <p className="text-sm text-gray-600 mt-1">
+                Developed by{' '}
+                <a
+                  href="https://phatnguyen.vercel.app/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:text-blue-700 font-medium transition-colors"
+                >
+                  Phat Nguyen
+                </a>{' '}
+                ❤️
+              </p>
+            </div>
             <div className="flex space-x-6 mt-4 md:mt-0">
               <a href="#" className="text-sm text-gray-600 hover:text-blue-600 transition-colors">
                 Facebook

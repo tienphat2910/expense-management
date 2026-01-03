@@ -237,6 +237,100 @@ export const api = {
     },
   },
 
+  // Savings endpoints
+  savings: {
+    getAll: async (): Promise<ApiResponse> => {
+      const user = api.getUser();
+      const response = await fetch(`${API_URL}/api/savings?userId=${user?._id}`, {
+        headers: {
+          'Authorization': `Bearer ${api.getToken()}`,
+        },
+      });
+      return response.json();
+    },
+
+    getById: async (id: string): Promise<ApiResponse> => {
+      const response = await fetch(`${API_URL}/api/savings/${id}`, {
+        headers: {
+          'Authorization': `Bearer ${api.getToken()}`,
+        },
+      });
+      return response.json();
+    },
+
+    create: async (data: any): Promise<ApiResponse> => {
+      const user = api.getUser();
+      const response = await fetch(`${API_URL}/api/savings`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${api.getToken()}`,
+        },
+        body: JSON.stringify({ ...data, userId: user?._id }),
+      });
+      return response.json();
+    },
+
+    update: async (id: string, data: any): Promise<ApiResponse> => {
+      const response = await fetch(`${API_URL}/api/savings/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${api.getToken()}`,
+        },
+        body: JSON.stringify(data),
+      });
+      return response.json();
+    },
+
+    delete: async (id: string): Promise<ApiResponse> => {
+      const response = await fetch(`${API_URL}/api/savings/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${api.getToken()}`,
+        },
+      });
+      return response.json();
+    },
+
+    deposit: async (id: string, amount: number, walletId: string): Promise<ApiResponse> => {
+      const response = await fetch(`${API_URL}/api/savings/${id}/deposit`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${api.getToken()}`,
+        },
+        body: JSON.stringify({ amount, walletId }),
+      });
+      return response.json();
+    },
+
+    withdraw: async (id: string, amount: number, walletId: string): Promise<ApiResponse> => {
+      const response = await fetch(`${API_URL}/api/savings/${id}/withdraw`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${api.getToken()}`,
+        },
+        body: JSON.stringify({ amount, walletId }),
+      });
+      return response.json();
+    },
+
+    getTransactions: async (id: string, page = 1, limit = 20, month?: number, year?: number): Promise<ApiResponse> => {
+      let url = `${API_URL}/api/savings/${id}/transactions?page=${page}&limit=${limit}`;
+      if (month && year) {
+        url += `&month=${month}&year=${year}`;
+      }
+      const response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${api.getToken()}`,
+        },
+      });
+      return response.json();
+    },
+  },
+
   // User endpoints
   users: {
     getProfile: async (): Promise<ApiResponse> => {
@@ -271,6 +365,20 @@ export const api = {
           'Authorization': `Bearer ${api.getToken()}`,
         },
         body: JSON.stringify({ userId: user?._id, currentPassword, newPassword }),
+      });
+      return response.json();
+    },
+  },
+
+  // Settings endpoints
+  settings: {
+    resetData: async (): Promise<ApiResponse> => {
+      const user = api.getUser();
+      const response = await fetch(`${API_URL}/api/settings/reset-data?userId=${user?._id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${api.getToken()}`,
+        },
       });
       return response.json();
     },

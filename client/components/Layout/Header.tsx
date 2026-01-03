@@ -46,7 +46,8 @@ export default function Header() {
     { href: "/", label: "Trang chủ" },
     { href: "/transactions", label: "Giao dịch" },
     { href: "/wallets", label: "Ví" },
-    { href: "/statistics", label: "Thống kê" },
+    { href: "/savings", label: "Tiết kiệm" },
+    { href: "/statistics", label: "Thống kê" }
   ];
 
   return (
