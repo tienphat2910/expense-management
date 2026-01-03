@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Transaction = require('../models/Transaction');
 const Category = require('../models/Category');
+const Wallet = require('../models/Wallet');
 
 /**
  * @swagger
@@ -49,10 +50,17 @@ router.get('/', async (req, res) => {
     try {
         // TODO: Lấy userId từ JWT token
         // const userId = req.user.id;
-        const { type, categoryId, startDate, endDate, page = 1, limit = 20 } = req.query;
+        const { userId, type, categoryId, startDate, endDate, page = 1, limit = 20 } = req.query;
+
+        if (!userId) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'User ID is required' 
+            });
+        }
 
         const filter = {
-            // userId,
+            userId,
         };
 
         if (type) filter.type = type;
@@ -63,27 +71,27 @@ router.get('/', async (req, res) => {
             if (endDate) filter.transactionDate.$lte = new Date(endDate);
         }
 
-        // const skip = (page - 1) * limit;
-        // const transactions = await Transaction.find(filter)
-        //     .populate('categoryId', 'name icon color type')
-        //     .sort({ transactionDate: -1 })
-        //     .skip(skip)
-        //     .limit(parseInt(limit));
+        const skip = (page - 1) * limit;
+        const transactions = await Transaction.find(filter)
+            .populate('categoryId', 'name icon color type')
+            .populate('walletId', 'name type color')
+            .sort({ transactionDate: -1 })
+            .skip(skip)
+            .limit(parseInt(limit));
 
-        // const total = await Transaction.countDocuments(filter);
+        const total = await Transaction.countDocuments(filter);
 
         res.status(200).json({
             success: true,
-            message: 'TODO: Implement authentication middleware',
-            // data: {
-            //     transactions,
-            //     pagination: {
-            //         page: parseInt(page),
-            //         limit: parseInt(limit),
-            //         total,
-            //         pages: Math.ceil(total / limit)
-            //     }
-            // }
+            data: {
+                transactions,
+                pagination: {
+                    page: parseInt(page),
+                    limit: parseInt(limit),
+                    total,
+                    totalPages: Math.ceil(total / limit)
+                }
+            }
         });
 
     } catch (error) {
@@ -119,6 +127,7 @@ router.get('/:id', async (req, res) => {
         const { id } = req.params;
         const transaction = await Transaction.findById(id)
             .populate('categoryId', 'name icon color type')
+            .populate('walletId', 'name type color')
             .populate('userId', 'username email fullName');
 
         if (!transaction) {
@@ -200,7 +209,9 @@ router.post('/', async (req, res) => {
         // TODO: Lấy userId từ JWT token
         // const userId = req.user.id;
         const {
+            userId,
             categoryId,
+            walletId,
             type,
             amount,
             currency = 'VND',
@@ -213,44 +224,79 @@ router.post('/', async (req, res) => {
         } = req.body;
 
         // Validate required fields
-        if (!categoryId || !type || !amount || !transactionDate) {
+        if (!userId || !categoryId || !walletId || !type || !amount || !transactionDate) {
             return res.status(400).json({
                 success: false,
                 message: 'Vui lòng điền đầy đủ thông tin bắt buộc'
             });
         }
 
-        // Verify category exists
-        const category = await Category.findById(categoryId);
+        // Find or create category
+        let category = await Category.findOne({ name: categoryId, userId, type });
         if (!category) {
+            // Create new category if not exists
+            category = new Category({
+                userId,
+                name: categoryId,
+                type,
+                icon: req.body.categoryIcon || '',
+                color: req.body.categoryColor || (type === 'income' ? '#10b981' : '#ef4444')
+            });
+            await category.save();
+        }
+
+        // Verify wallet exists and belongs to user
+        const wallet = await Wallet.findOne({ _id: walletId, userId });
+        if (!wallet) {
             return res.status(404).json({
                 success: false,
-                message: 'Không tìm thấy category'
+                message: 'Không tìm thấy ví hoặc ví không thuộc về bạn'
             });
         }
 
-        // const newTransaction = new Transaction({
-        //     userId,
-        //     categoryId,
-        //     type,
-        //     amount,
-        //     currency,
-        //     description,
-        //     transactionDate,
-        //     paymentMethod,
-        //     location,
-        //     tags,
-        //     notes
-        // });
+        // Check if wallet has enough balance for expense
+        if (type === 'expense' && wallet.balance < amount) {
+            return res.status(400).json({
+                success: false,
+                message: 'Số dư ví không đủ cho giao dịch này'
+            });
+        }
 
-        // await newTransaction.save();
+        const newTransaction = new Transaction({
+            userId,
+            categoryId: category._id,
+            walletId,
+            type,
+            amount,
+            currency,
+            description,
+            transactionDate,
+            paymentMethod,
+            location,
+            tags,
+            notes
+        });
+
+        await newTransaction.save();
+
+        // Update wallet balance
+        if (type === 'income') {
+            wallet.balance += amount;
+        } else {
+            wallet.balance -= amount;
+        }
+        await wallet.save();
 
         // TODO: Update budget spent if exists
 
+        const populatedTransaction = await Transaction.findById(newTransaction._id)
+            .populate('categoryId', 'name icon color type')
+            .populate('walletId', 'name type color');
+
         res.status(201).json({
             success: true,
-            message: 'TODO: Implement authentication middleware',
-            // data: newTransaction
+            message: 'Tạo giao dịch thành công',
+            data: populatedTransaction
         });
 
     } catch (error) {

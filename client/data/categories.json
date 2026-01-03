@@ -1,0 +1,131 @@
+{
+  "income": [
+    {
+      "name": "Lương",
+      "icon": "Briefcase",
+      "color": "#10b981"
+    },
+    {
+      "name": "Thưởng",
+      "icon": "Gift",
+      "color": "#f59e0b"
+    },
+    {
+      "name": "Đầu tư",
+      "icon": "TrendingUp",
+      "color": "#3b82f6"
+    },
+    {
+      "name": "Kinh doanh",
+      "icon": "Store",
+      "color": "#8b5cf6"
+    },
+    {
+      "name": "Làm thêm",
+      "icon": "Clock",
+      "color": "#06b6d4"
+    },
+    {
+      "name": "Cho thuê",
+      "icon": "Home",
+      "color": "#14b8a6"
+    },
+    {
+      "name": "Lãi suất",
+      "icon": "Percent",
+      "color": "#84cc16"
+    },
+    {
+      "name": "Khác",
+      "icon": "DollarSign",
+      "color": "#6b7280"
+    }
+  ],
+  "expense": [
+    {
+      "name": "Ăn uống",
+      "icon": "UtensilsCrossed",
+      "color": "#ef4444"
+    },
+    {
+      "name": "Mua sắm",
+      "icon": "ShoppingBag",
+      "color": "#ec4899"
+    },
+    {
+      "name": "Đi lại",
+      "icon": "Car",
+      "color": "#f97316"
+    },
+    {
+      "name": "Nhà cửa",
+      "icon": "Home",
+      "color": "#8b5cf6"
+    },
+    {
+      "name": "Điện nước",
+      "icon": "Zap",
+      "color": "#eab308"
+    },
+    {
+      "name": "Giải trí",
+      "icon": "Gamepad2",
+      "color": "#06b6d4"
+    },
+    {
+      "name": "Y tế",
+      "icon": "Heart",
+      "color": "#f43f5e"
+    },
+    {
+      "name": "Giáo dục",
+      "icon": "GraduationCap",
+      "color": "#3b82f6"
+    },
+    {
+      "name": "Thể thao",
+      "icon": "Dumbbell",
+      "color": "#22c55e"
+    },
+    {
+      "name": "Du lịch",
+      "icon": "Plane",
+      "color": "#0ea5e9"
+    },
+    {
+      "name": "Quà tặng",
+      "icon": "Gift",
+      "color": "#a855f7"
+    },
+    {
+      "name": "Điện thoại",
+      "icon": "Smartphone",
+      "color": "#64748b"
+    },
+    {
+      "name": "Internet",
+      "icon": "Wifi",
+      "color": "#6366f1"
+    },
+    {
+      "name": "Bảo hiểm",
+      "icon": "Shield",
+      "color": "#14b8a6"
+    },
+    {
+      "name": "Làm đẹp",
+      "icon": "Sparkles",
+      "color": "#f472b6"
+    },
+    {
+      "name": "Thú cưng",
+      "icon": "PawPrint",
+      "color": "#fb923c"
+    },
+    {
+      "name": "Khác",
+      "icon": "MoreHorizontal",
+      "color": "#6b7280"
+    }
+  ]
+}

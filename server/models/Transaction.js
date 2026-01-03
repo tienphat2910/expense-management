@@ -11,6 +11,11 @@ const transactionSchema = new mongoose.Schema({
     ref: 'Category',
     required: true
   },
+  walletId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Wallet',
+    required: true
+  },
   type: {
     type: String,
     required: true,

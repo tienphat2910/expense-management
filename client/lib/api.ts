@@ -57,7 +57,9 @@ export const api = {
   // Statistics endpoints
   statistics: {
     getSummary: async (startDate?: string, endDate?: string): Promise<ApiResponse> => {
+      const user = api.getUser();
       const params = new URLSearchParams();
+      if (user?._id) params.append('userId', user._id);
       if (startDate) params.append('startDate', startDate);
       if (endDate) params.append('endDate', endDate);
       
@@ -99,7 +101,13 @@ export const api = {
   // Transactions endpoints
   transactions: {
     getAll: async (page = 1, limit = 20): Promise<ApiResponse> => {
-      const response = await fetch(`${API_URL}/api/transactions?page=${page}&limit=${limit}`, {
+      const user = api.getUser();
+      const params = new URLSearchParams();
+      if (user?._id) params.append('userId', user._id);
+      params.append('page', page.toString());
+      params.append('limit', limit.toString());
+      
+      const response = await fetch(`${API_URL}/api/transactions?${params}`, {
         headers: {
           'Authorization': `Bearer ${api.getToken()}`,
         },
@@ -117,13 +125,14 @@ export const api = {
     },
 
     create: async (data: any): Promise<ApiResponse> => {
+      const user = api.getUser();
       const response = await fetch(`${API_URL}/api/transactions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${api.getToken()}`,
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify({ ...data, userId: user?._id }),
       });
       return response.json();
     },
@@ -153,6 +162,115 @@ export const api = {
         headers: {
           'Authorization': `Bearer ${api.getToken()}`,
         },
+      });
+      return response.json();
+    },
+  },
+
+  // Wallets endpoints
+  wallets: {
+    getAll: async (includeInactive = false): Promise<ApiResponse> => {
+      const user = api.getUser();
+      const params = new URLSearchParams();
+      if (user?._id) params.append('userId', user._id);
+      if (includeInactive) params.append('includeInactive', 'true');
+      
+      const response = await fetch(`${API_URL}/api/wallets?${params}`, {
+        headers: {
+          'Authorization': `Bearer ${api.getToken()}`,
+        },
+      });
+      return response.json();
+    },
+
+    getById: async (id: string): Promise<ApiResponse> => {
+      const response = await fetch(`${API_URL}/api/wallets/${id}`, {
+        headers: {
+          'Authorization': `Bearer ${api.getToken()}`,
+        },
+      });
+      return response.json();
+    },
+
+    create: async (data: any): Promise<ApiResponse> => {
+      const user = api.getUser();
+      const response = await fetch(`${API_URL}/api/wallets`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${api.getToken()}`,
+        },
+        body: JSON.stringify({ ...data, userId: user?._id }),
+      });
+      return response.json();
+    },
+
+    update: async (id: string, data: any): Promise<ApiResponse> => {
+      const response = await fetch(`${API_URL}/api/wallets/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${api.getToken()}`,
+        },
+        body: JSON.stringify(data),
+      });
+      return response.json();
+    },
+
+    delete: async (id: string): Promise<ApiResponse> => {
+      const response = await fetch(`${API_URL}/api/wallets/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${api.getToken()}`,
+        },
+      });
+      return response.json();
+    },
+
+    getTransactions: async (id: string, page = 1, limit = 20): Promise<ApiResponse> => {
+      const response = await fetch(`${API_URL}/api/wallets/${id}/transactions?page=${page}&limit=${limit}`, {
+        headers: {
+          'Authorization': `Bearer ${api.getToken()}`,
+        },
+      });
+      return response.json();
+    },
+  },
+
+  // User endpoints
+  users: {
+    getProfile: async (): Promise<ApiResponse> => {
+      const user = api.getUser();
+      const response = await fetch(`${API_URL}/api/users/profile?userId=${user?._id}`, {
+        headers: {
+          'Authorization': `Bearer ${api.getToken()}`,
+        },
+      });
+      return response.json();
+    },
+
+    updateProfile: async (data: any): Promise<ApiResponse> => {
+      const user = api.getUser();
+      const response = await fetch(`${API_URL}/api/users/profile`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${api.getToken()}`,
+        },
+        body: JSON.stringify({ ...data, userId: user?._id }),
+      });
+      return response.json();
+    },
+
+    changePassword: async (currentPassword: string, newPassword: string): Promise<ApiResponse> => {
+      const user = api.getUser();
+      const response = await fetch(`${API_URL}/api/users/password`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${api.getToken()}`,
+        },
+        body: JSON.stringify({ userId: user?._id, currentPassword, newPassword }),
       });
       return response.json();
     },

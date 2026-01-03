@@ -30,6 +30,7 @@ app.use('/api/categories', require('./routes/categories'));
 app.use('/api/transactions', require('./routes/transactions'));
 app.use('/api/budgets', require('./routes/budgets'));
 app.use('/api/statistics', require('./routes/statistics'));
+app.use('/api/wallets', require('./routes/wallets'));
 
 // Kết nối MongoDB
 mongoose

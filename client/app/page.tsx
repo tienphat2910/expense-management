@@ -7,7 +7,6 @@ import Header from "@/components/Layout/Header";
 import Footer from "@/components/Layout/Footer";
 import StatsCard from "@/components/Dashboard/StatsCard";
 import RecentTransactions from "@/components/Dashboard/RecentTransactions";
-import BudgetOverview from "@/components/Dashboard/BudgetOverview";
 import { api } from "@/lib/api";
 
 export default function Home() {
@@ -20,7 +19,6 @@ export default function Home() {
     transactionCount: 0,
   });
   const [recentTransactions, setRecentTransactions] = useState([]);
-  const [budgets, setBudgets] = useState([]);
 
   useEffect(() => {
     // Check if user is logged in
@@ -40,21 +38,21 @@ export default function Home() {
     try {
       // Load statistics
       const statsResponse = await api.statistics.getSummary();
+      console.log('Stats Response:', JSON.stringify(statsResponse, null, 2));
       if (statsResponse.success && statsResponse.data) {
+        console.log('Stats Data:', statsResponse.data);
         setStats(statsResponse.data);
+      } else {
+        console.error('Stats failed:', statsResponse);
       }
 
       // Load recent transactions
       const transactionsResponse = await api.transactions.getAll(1, 5);
+      console.log('Transactions Response:', JSON.stringify(transactionsResponse, null, 2));
       if (transactionsResponse.success && transactionsResponse.data?.transactions) {
         setRecentTransactions(transactionsResponse.data.transactions);
-      }
-
-      // Load budgets
-      const now = new Date();
-      const budgetsResponse = await api.budgets.getAll(now.getMonth() + 1, now.getFullYear());
-      if (budgetsResponse.success && budgetsResponse.data) {
-        setBudgets(budgetsResponse.data);
+      } else {
+        console.error('Transactions failed:', transactionsResponse);
       }
     } catch (error) {
       console.error("Error loading dashboard data:", error);
@@ -123,25 +121,25 @@ export default function Home() {
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Thao tác nhanh</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <button
-                onClick={() => router.push("/transactions/new?type=income")}
+                onClick={() => router.push("/transactions")}
                 className="flex flex-col items-center justify-center p-4 rounded-lg border-2 border-dashed border-gray-300 hover:border-green-500 hover:bg-green-50 transition-colors"
               >
                 <Plus className="w-6 h-6 text-green-600 mb-2" />
                 <span className="text-sm font-medium text-gray-700">Thêm thu nhập</span>
               </button>
               <button
-                onClick={() => router.push("/transactions/new?type=expense")}
+                onClick={() => router.push("/transactions")}
                 className="flex flex-col items-center justify-center p-4 rounded-lg border-2 border-dashed border-gray-300 hover:border-red-500 hover:bg-red-50 transition-colors"
               >
                 <Plus className="w-6 h-6 text-red-600 mb-2" />
                 <span className="text-sm font-medium text-gray-700">Thêm chi tiêu</span>
               </button>
               <button
-                onClick={() => router.push("/budgets/new")}
+                onClick={() => router.push("/wallets")}
                 className="flex flex-col items-center justify-center p-4 rounded-lg border-2 border-dashed border-gray-300 hover:border-blue-500 hover:bg-blue-50 transition-colors"
               >
                 <Plus className="w-6 h-6 text-blue-600 mb-2" />
-                <span className="text-sm font-medium text-gray-700">Tạo ngân sách</span>
+                <span className="text-sm font-medium text-gray-700">Quản lý ví</span>
               </button>
               <button
                 onClick={() => router.push("/statistics")}
@@ -153,10 +151,9 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Recent Transactions & Budget Overview */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Recent Transactions */}
+          <div>
             <RecentTransactions transactions={recentTransactions} />
-            <BudgetOverview budgets={budgets} />
           </div>
         </div>
       </main>

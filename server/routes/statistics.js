@@ -1,8 +1,10 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 const Transaction = require('../models/Transaction');
 const Budget = require('../models/Budget');
 const Category = require('../models/Category');
+const Wallet = require('../models/Wallet');
 
 /**
  * @swagger
@@ -44,10 +46,17 @@ router.get('/summary', async (req, res) => {
     try {
         // TODO: Lấy userId từ JWT token
         // const userId = req.user.id;
-        const { startDate, endDate } = req.query;
+        const { userId, startDate, endDate } = req.query;
+
+        if (!userId) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'User ID is required' 
+            });
+        }
 
         const filter = {
-            // userId
+            userId: new mongoose.Types.ObjectId(userId)
         };
 
         if (startDate || endDate) {
@@ -56,26 +65,46 @@ router.get('/summary', async (req, res) => {
             if (endDate) filter.transactionDate.$lte = new Date(endDate);
         }
 
-        // const summary = await Transaction.aggregate([
-        //     { $match: filter },
-        //     {
-        //         $group: {
-        //             _id: '$type',
-        //             total: { $sum: '$amount' },
-        //             count: { $sum: 1 }
-        //         }
-        //     }
-        // ]);
+        const summary = await Transaction.aggregate([
+            { $match: filter },
+            {
+                $group: {
+                    _id: '$type',
+                    total: { $sum: '$amount' },
+                    count: { $sum: 1 }
+                }
+            }
+        ]);
+
+        let totalIncome = 0;
+        let totalExpense = 0;
+        let transactionCount = 0;
+
+        summary.forEach(item => {
+            if (item._id === 'income') {
+                totalIncome = item.total;
+                transactionCount += item.count;
+            } else if (item._id === 'expense') {
+                totalExpense = item.total;
+                transactionCount += item.count;
+            }
+        });
+
+        // Get total balance from all active wallets
+        const wallets = await Wallet.find({ 
+            userId: new mongoose.Types.ObjectId(userId),
+            isActive: true 
+        });
+        const balance = wallets.reduce((sum, wallet) => sum + wallet.balance, 0);
 
         res.status(200).json({
             success: true,
-            message: 'TODO: Implement authentication and calculation',
-            // data: {
-            //     totalIncome: ...,
-            //     totalExpense: ...,
-            //     balance: ...,
-            //     transactionCount: ...
-            // }
+            data: {
+                totalIncome,
+                totalExpense,
+                balance,
+                transactionCount
+            }
         });
 
     } catch (error) {

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Menu, X, User, LogOut, Settings, ChevronDown } from "lucide-react";
 import { api } from "@/lib/api";
@@ -44,7 +45,7 @@ export default function Header() {
   const navLinks = [
     { href: "/", label: "Trang chủ" },
     { href: "/transactions", label: "Giao dịch" },
-    { href: "/budgets", label: "Ngân sách" },
+    { href: "/wallets", label: "Ví" },
     { href: "/statistics", label: "Thống kê" },
   ];
 
@@ -55,12 +56,14 @@ export default function Header() {
           {/* Logo */}
           <div className="flex items-center">
             <Link href="/" className="flex items-center space-x-2">
-              <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-xl">EM</span>
-              </div>
-              <span className="text-xl font-bold text-gray-900 hidden sm:block">
-                Expense Manager
-              </span>
+              <Image 
+                src="/images/logo.png" 
+                alt="Sổ thu chi cá nhân" 
+                width={120} 
+                height={48}
+                className="h-12 w-auto"
+                priority
+              />
             </Link>
           </div>
 
