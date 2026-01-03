@@ -35,8 +35,15 @@ app.use('/api/savings', require('./routes/savings'));
 app.use('/api/settings', require('./routes/settings'));
 
 // Kết nối MongoDB
+const MONGO_URI = process.env.MONGO_URI;
+
+if (!MONGO_URI) {
+    console.error("❌ MONGO_URI không được định nghĩa trong biến môi trường");
+    process.exit(1);
+}
+
 mongoose
-    .connect(process.env.MONGO_URI)
+    .connect(MONGO_URI)
     .then(() => {
         console.log("✅ Kết nối MongoDB thành công");
         console.log('📊 Database: Expense Management');
