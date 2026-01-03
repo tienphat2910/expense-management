@@ -190,8 +190,6 @@ export default function TransactionsPage() {
       ]);
 
       if (transactionsRes.success && transactionsRes.data) {
-        console.log('Transactions data:', transactionsRes.data);
-        console.log('First transaction:', transactionsRes.data.transactions?.[0]);
         setTransactions(transactionsRes.data.transactions || transactionsRes.data);
         setTotalPages(transactionsRes.data.totalPages || 1);
       }

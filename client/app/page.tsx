@@ -38,9 +38,7 @@ export default function Home() {
     try {
       // Load statistics
       const statsResponse = await api.statistics.getSummary();
-      console.log('Stats Response:', JSON.stringify(statsResponse, null, 2));
       if (statsResponse.success && statsResponse.data) {
-        console.log('Stats Data:', statsResponse.data);
         setStats(statsResponse.data);
       } else {
         console.error('Stats failed:', statsResponse);
@@ -48,7 +46,6 @@ export default function Home() {
 
       // Load recent transactions
       const transactionsResponse = await api.transactions.getAll(1, 5);
-      console.log('Transactions Response:', JSON.stringify(transactionsResponse, null, 2));
       if (transactionsResponse.success && transactionsResponse.data?.transactions) {
         setRecentTransactions(transactionsResponse.data.transactions);
       } else {
