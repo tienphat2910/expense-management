@@ -25,11 +25,26 @@ export const api = {
     return null;
   },
 
-  // Logout
+  // Logout - Clear all authentication data
   logout: () => {
     if (typeof window !== 'undefined') {
+      // Remove all auth-related items from localStorage
       localStorage.removeItem('user');
       localStorage.removeItem('token');
+      // Optional: Clear any other cached data
+      localStorage.removeItem('lastActivity');
+    }
+  },
+
+  // Save auth data (called after successful login)
+  saveAuth: (user: any, token?: string) => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('user', JSON.stringify(user));
+      if (token) {
+        localStorage.setItem('token', token);
+      }
+      // Mark last activity time for reference (optional)
+      localStorage.setItem('lastActivity', new Date().toISOString());
     }
   },
 

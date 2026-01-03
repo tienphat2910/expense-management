@@ -100,12 +100,10 @@ export default function RegisterPage() {
         return;
       }
 
-      // Store user data and token in localStorage
+      // Store user data and token in localStorage permanently
+      // Data will persist until user explicitly logs out
       if (data.data?.user) {
-        localStorage.setItem("user", JSON.stringify(data.data.user));
-        if (data.data.token) {
-          localStorage.setItem("token", data.data.token);
-        }
+        api.saveAuth(data.data.user, data.data.token);
       }
 
       // Redirect to home page
