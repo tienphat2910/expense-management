@@ -1,3 +1,72 @@
+import { 
+  Briefcase,
+  Gift,
+  TrendingUp,
+  Store,
+  Clock,
+  Home,
+  Percent,
+  DollarSign,
+  UtensilsCrossed,
+  ShoppingBag,
+  Car,
+  Zap,
+  Gamepad2,
+  Heart,
+  GraduationCap,
+  Dumbbell,
+  Plane,
+  Smartphone,
+  Wifi,
+  Shield,
+  Sparkles,
+  PawPrint,
+  MoreHorizontal,
+  ShoppingCart,
+  Laptop,
+  Megaphone,
+  Monitor,
+  Pill,
+  Wrench,
+  CreditCard,
+  LucideIcon,
+  ArrowDownLeft,
+  ArrowUpRight
+} from 'lucide-react';
+
+const iconMap: Record<string, LucideIcon> = {
+  Briefcase,
+  Gift,
+  TrendingUp,
+  Store,
+  Clock,
+  Home,
+  Percent,
+  DollarSign,
+  UtensilsCrossed,
+  ShoppingBag,
+  Car,
+  Zap,
+  Gamepad2,
+  Heart,
+  GraduationCap,
+  Dumbbell,
+  Plane,
+  Smartphone,
+  Wifi,
+  Shield,
+  Sparkles,
+  PawPrint,
+  MoreHorizontal,
+  ShoppingCart,
+  Laptop,
+  Megaphone,
+  Monitor,
+  Pill,
+  Wrench,
+  CreditCard,
+};
+
 interface Transaction {
   _id: string;
   type: "income" | "expense";
@@ -55,43 +124,55 @@ export default function RecentTransactions({ transactions }: RecentTransactionsP
       </div>
 
       <div className="space-y-4">
-        {transactions.map((transaction) => (
-          <div
-            key={transaction._id}
-            className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0"
-          >
-            <div className="flex items-center space-x-3 flex-1">
-              <div
-                className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                  transaction.type === "income"
-                    ? "bg-green-100 text-green-600"
-                    : "bg-red-100 text-red-600"
-                }`}
-              >
-                {transaction.type === "income" ? "+" : "-"}
+        {transactions.map((transaction) => {
+          const IconComponent = transaction.categoryId?.icon 
+            ? iconMap[transaction.categoryId.icon]
+            : null;
+          const categoryColor = transaction.categoryId?.color || (transaction.type === 'income' ? '#10b981' : '#ef4444');
+          
+          return (
+            <div
+              key={transaction._id}
+              className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0"
+            >
+              <div className="flex items-center space-x-3 flex-1">
+                <div
+                  className="w-10 h-10 rounded-lg flex items-center justify-center"
+                  style={{ backgroundColor: categoryColor + '20' }}
+                >
+                  {IconComponent ? (
+                    <IconComponent className="w-5 h-5" style={{ color: categoryColor }} />
+                  ) : (
+                    transaction.type === "income" ? (
+                      <ArrowDownLeft className="w-5 h-5" style={{ color: categoryColor }} />
+                    ) : (
+                      <ArrowUpRight className="w-5 h-5" style={{ color: categoryColor }} />
+                    )
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-900 truncate">
+                    {transaction.categoryId?.name || "Khác"}
+                  </p>
+                  <p className="text-xs text-gray-500 truncate">
+                    {transaction.description || "Không có mô tả"}
+                  </p>
+                </div>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 truncate">
-                  {transaction.categoryId?.name || "Khác"}
+              <div className="text-right ml-4">
+                <p
+                  className={`text-sm font-semibold ${
+                    transaction.type === "income" ? "text-green-600" : "text-red-600"
+                  }`}
+                >
+                  {transaction.type === "income" ? "+" : "-"}
+                  {formatCurrency(transaction.amount)}
                 </p>
-                <p className="text-xs text-gray-500 truncate">
-                  {transaction.description || "Không có mô tả"}
-                </p>
+                <p className="text-xs text-gray-500">{formatDate(transaction.transactionDate)}</p>
               </div>
             </div>
-            <div className="text-right ml-4">
-              <p
-                className={`text-sm font-semibold ${
-                  transaction.type === "income" ? "text-green-600" : "text-red-600"
-                }`}
-              >
-                {transaction.type === "income" ? "+" : "-"}
-                {formatCurrency(transaction.amount)}
-              </p>
-              <p className="text-xs text-gray-500">{formatDate(transaction.transactionDate)}</p>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

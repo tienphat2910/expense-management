@@ -115,12 +115,22 @@ export const api = {
 
   // Transactions endpoints
   transactions: {
-    getAll: async (page = 1, limit = 20): Promise<ApiResponse> => {
+    getAll: async (page = 1, limit = 20, filters?: { type?: string; categoryId?: string; search?: string }): Promise<ApiResponse> => {
       const user = api.getUser();
       const params = new URLSearchParams();
       if (user?._id) params.append('userId', user._id);
       params.append('page', page.toString());
       params.append('limit', limit.toString());
+      
+      if (filters?.type && filters.type !== 'all') {
+        params.append('type', filters.type);
+      }
+      if (filters?.categoryId && filters.categoryId !== 'all') {
+        params.append('categoryName', filters.categoryId);
+      }
+      if (filters?.search) {
+        params.append('search', filters.search);
+      }
       
       const response = await fetch(`${API_URL}/api/transactions?${params}`, {
         headers: {
@@ -309,25 +319,27 @@ export const api = {
     },
 
     deposit: async (id: string, amount: number, walletId: string): Promise<ApiResponse> => {
+      const user = api.getUser();
       const response = await fetch(`${API_URL}/api/savings/${id}/deposit`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${api.getToken()}`,
         },
-        body: JSON.stringify({ amount, walletId }),
+        body: JSON.stringify({ amount, walletId, userId: user?._id }),
       });
       return response.json();
     },
 
     withdraw: async (id: string, amount: number, walletId: string): Promise<ApiResponse> => {
+      const user = api.getUser();
       const response = await fetch(`${API_URL}/api/savings/${id}/withdraw`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${api.getToken()}`,
         },
-        body: JSON.stringify({ amount, walletId }),
+        body: JSON.stringify({ amount, walletId, userId: user?._id }),
       });
       return response.json();
     },
@@ -341,6 +353,66 @@ export const api = {
         headers: {
           'Authorization': `Bearer ${api.getToken()}`,
         },
+      });
+      return response.json();
+    },
+
+    generateInvite: async (id: string): Promise<ApiResponse> => {
+      const response = await fetch(`${API_URL}/api/savings/${id}/generate-invite`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${api.getToken()}`,
+        },
+      });
+      return response.json();
+    },
+
+    joinByToken: async (token: string, userId: string): Promise<ApiResponse> => {
+      const response = await fetch(`${API_URL}/api/savings/join/${token}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${api.getToken()}`,
+        },
+        body: JSON.stringify({ userId }),
+      });
+      return response.json();
+    },
+
+    searchUsers: async (username: string, excludeUserId?: string): Promise<ApiResponse> => {
+      let url = `${API_URL}/api/savings/search-users?username=${username}`;
+      if (excludeUserId) {
+        url += `&excludeUserId=${excludeUserId}`;
+      }
+      const response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${api.getToken()}`,
+        },
+      });
+      return response.json();
+    },
+
+    inviteUser: async (id: string, userId: string): Promise<ApiResponse> => {
+      const response = await fetch(`${API_URL}/api/savings/${id}/invite-user`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${api.getToken()}`,
+        },
+        body: JSON.stringify({ userId }),
+      });
+      return response.json();
+    },
+
+    removeMember: async (id: string, userId: string): Promise<ApiResponse> => {
+      const response = await fetch(`${API_URL}/api/savings/${id}/remove-member`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${api.getToken()}`,
+        },
+        body: JSON.stringify({ userId }),
       });
       return response.json();
     },
@@ -391,6 +463,62 @@ export const api = {
       const user = api.getUser();
       const response = await fetch(`${API_URL}/api/settings/reset-data?userId=${user?._id}`, {
         method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${api.getToken()}`,
+        },
+      });
+      return response.json();
+    },
+  },
+
+  // Notifications endpoints
+  notifications: {
+    getAll: async (): Promise<ApiResponse> => {
+      const user = api.getUser();
+      const response = await fetch(`${API_URL}/api/notifications?userId=${user?._id}`, {
+        headers: {
+          'Authorization': `Bearer ${api.getToken()}`,
+        },
+      });
+      return response.json();
+    },
+
+    markAsRead: async (id: string): Promise<ApiResponse> => {
+      const response = await fetch(`${API_URL}/api/notifications/${id}/read`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${api.getToken()}`,
+        },
+      });
+      return response.json();
+    },
+
+    markAllAsRead: async (): Promise<ApiResponse> => {
+      const user = api.getUser();
+      const response = await fetch(`${API_URL}/api/notifications/read-all`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${api.getToken()}`,
+        },
+        body: JSON.stringify({ userId: user?._id }),
+      });
+      return response.json();
+    },
+
+    acceptInvite: async (id: string): Promise<ApiResponse> => {
+      const response = await fetch(`${API_URL}/api/notifications/${id}/accept-invite`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${api.getToken()}`,
+        },
+      });
+      return response.json();
+    },
+
+    declineInvite: async (id: string): Promise<ApiResponse> => {
+      const response = await fetch(`${API_URL}/api/notifications/${id}/decline-invite`, {
+        method: 'POST',
         headers: {
           'Authorization': `Bearer ${api.getToken()}`,
         },

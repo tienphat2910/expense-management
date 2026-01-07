@@ -46,6 +46,40 @@ const savingsSchema = new mongoose.Schema({
   color: {
     type: String,
     default: '#3b82f6'
+  },
+  // Multi-user support
+  isShared: {
+    type: Boolean,
+    default: false
+  },
+  members: [{
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true
+    },
+    role: {
+      type: String,
+      enum: ['owner', 'member'],
+      default: 'member'
+    },
+    contributedAmount: {
+      type: Number,
+      default: 0,
+      min: 0
+    },
+    joinedAt: {
+      type: Date,
+      default: Date.now
+    }
+  }],
+  inviteToken: {
+    type: String,
+    unique: true,
+    sparse: true
+  },
+  inviteTokenExpiry: {
+    type: Date
   }
 }, {
   timestamps: true

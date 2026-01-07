@@ -4,8 +4,10 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Menu, X, User, LogOut, Settings, ChevronDown } from "lucide-react";
+import { Menu, X, User, LogOut, Settings, ChevronDown, Bell } from "lucide-react";
 import { api } from "@/lib/api";
+import { formatDistanceToNow } from "date-fns";
+import { vi } from "date-fns/locale";
 
 interface UserData {
   username: string;
@@ -18,24 +20,127 @@ interface UserData {
   };
 }
 
+interface Notification {
+  _id: string;
+  type: string;
+  title: string;
+  message: string;
+  data: {
+    savingsId?: string;
+    inviteToken?: string;
+    fromUserId?: {
+      username: string;
+      fullName: string;
+    };
+  };
+  inviteStatus?: string;
+  isRead: boolean;
+  createdAt: string;
+}
+
 export default function Header() {
   const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [user] = useState<UserData | null>(() => api.getUser());
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
   const profileMenuRef = useRef<HTMLDivElement>(null);
+  const notificationRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Close profile menu when clicking outside
+    loadNotifications();
+    
+    // Refresh notifications every 30 seconds
+    const interval = setInterval(loadNotifications, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    // Close menus when clicking outside
     const handleClickOutside = (event: MouseEvent) => {
       if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
         setIsProfileMenuOpen(false);
+      }
+      if (notificationRef.current && !notificationRef.current.contains(event.target as Node)) {
+        setIsNotificationOpen(false);
       }
     };
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const loadNotifications = async () => {
+    try {
+      const response = await api.notifications.getAll();
+      if (response.success) {
+        setNotifications(response.data.notifications);
+        setUnreadCount(response.data.unreadCount);
+      }
+    } catch (error) {
+      console.error('Error loading notifications:', error);
+    }
+  };
+
+  const handleNotificationClick = async (notification: Notification) => {
+    // Don't navigate if it's a pending invite
+    if (notification.type === 'savings_invite' && notification.inviteStatus === 'pending') {
+      return;
+    }
+
+    // Mark as read
+    if (!notification.isRead) {
+      await api.notifications.markAsRead(notification._id);
+      await loadNotifications();
+    }
+
+    // Navigate based on notification type
+    if (notification.type === 'savings_invite' && notification.data.savingsId && notification.inviteStatus === 'accepted') {
+      router.push(`/savings/${notification.data.savingsId}`);
+    }
+    
+    setIsNotificationOpen(false);
+  };
+
+  const handleAcceptInvite = async (notification: Notification, e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      const response = await api.notifications.acceptInvite(notification._id);
+      if (response.success) {
+        await loadNotifications();
+        // Navigate to savings detail
+        if (notification.data.savingsId) {
+          router.push(`/savings/${notification.data.savingsId}`);
+          setIsNotificationOpen(false);
+        }
+      }
+    } catch (error) {
+      console.error('Error accepting invite:', error);
+    }
+  };
+
+  const handleDeclineInvite = async (notification: Notification, e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      const response = await api.notifications.declineInvite(notification._id);
+      if (response.success) {
+        await loadNotifications();
+      }
+    } catch (error) {
+      console.error('Error declining invite:', error);
+    }
+  };
+
+  const handleMarkAllAsRead = async () => {
+    try {
+      await api.notifications.markAllAsRead();
+      await loadNotifications();
+    } catch (error) {
+      console.error('Error marking all as read:', error);
+    }
+  };
 
   const handleLogout = () => {
     api.logout();
@@ -83,6 +188,109 @@ export default function Header() {
 
           {/* Desktop Profile Menu */}
           <div className="hidden md:flex items-center space-x-4">
+            {/* Notification Icon */}
+            <div className="relative" ref={notificationRef}>
+              <button
+                onClick={() => setIsNotificationOpen(!isNotificationOpen)}
+                className="relative p-2 text-gray-700 hover:text-blue-600 transition-colors"
+              >
+                <Bell className="w-6 h-6" />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
+              </button>
+
+              {/* Notification Dropdown */}
+              {isNotificationOpen && (
+                <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 max-h-96 overflow-hidden flex flex-col">
+                  <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
+                    <h3 className="font-semibold text-gray-900">Thông báo</h3>
+                    {unreadCount > 0 && (
+                      <button
+                        onClick={handleMarkAllAsRead}
+                        className="text-xs text-blue-600 hover:text-blue-700"
+                      >
+                        Đánh dấu tất cả đã đọc
+                      </button>
+                    )}
+                  </div>
+                  <div className="overflow-y-auto flex-1">
+                    {notifications.length === 0 ? (
+                      <div className="px-4 py-8 text-center text-gray-500">
+                        <Bell className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+                        <p>Không có thông báo</p>
+                      </div>
+                    ) : (
+                      notifications.map((notification) => (
+                        <div
+                          key={notification._id}
+                          className={`w-full px-4 py-3 border-b border-gray-100 ${
+                            !notification.isRead ? 'bg-blue-50' : ''
+                          }`}
+                        >
+                          <div className="flex items-start gap-3">
+                            <div className="flex-shrink-0">
+                              <div className={`w-2 h-2 rounded-full mt-2 ${
+                                !notification.isRead ? 'bg-blue-600' : 'bg-gray-300'
+                              }`} />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-gray-900">
+                                {notification.title}
+                              </p>
+                              <p className="text-sm text-gray-600 mt-1">
+                                {notification.message}
+                              </p>
+                              <p className="text-xs text-gray-400 mt-1">
+                                {formatDistanceToNow(new Date(notification.createdAt), {
+                                  addSuffix: true,
+                                  locale: vi
+                                })}
+                              </p>
+                              
+                              {/* Action buttons for pending invites */}
+                              {notification.type === 'savings_invite' && notification.inviteStatus === 'pending' && (
+                                <div className="flex gap-2 mt-3">
+                                  <button
+                                    onClick={(e) => handleAcceptInvite(notification, e)}
+                                    className="flex-1 px-3 py-1.5 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors"
+                                  >
+                                    Chấp nhận
+                                  </button>
+                                  <button
+                                    onClick={(e) => handleDeclineInvite(notification, e)}
+                                    className="flex-1 px-3 py-1.5 bg-gray-200 text-gray-700 text-sm rounded hover:bg-gray-300 transition-colors"
+                                  >
+                                    Từ chối
+                                  </button>
+                                </div>
+                              )}
+
+                              {/* Status for processed invites */}
+                              {notification.type === 'savings_invite' && notification.inviteStatus === 'accepted' && (
+                                <button
+                                  onClick={() => handleNotificationClick(notification)}
+                                  className="mt-2 text-sm text-blue-600 hover:text-blue-700"
+                                >
+                                  Xem chi tiết →
+                                </button>
+                              )}
+                              
+                              {notification.type === 'savings_invite' && notification.inviteStatus === 'declined' && (
+                                <p className="mt-2 text-xs text-gray-500">Đã từ chối</p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
             <div className="relative" ref={profileMenuRef}>
               <button
                 onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}

@@ -50,7 +50,7 @@ router.get('/', async (req, res) => {
     try {
         // TODO: Lấy userId từ JWT token
         // const userId = req.user.id;
-        const { userId, type, categoryId, startDate, endDate, page = 1, limit = 20 } = req.query;
+        const { userId, type, categoryId, categoryName, search, startDate, endDate, page = 1, limit = 20 } = req.query;
 
         if (!userId) {
             return res.status(400).json({ 
@@ -59,25 +59,61 @@ router.get('/', async (req, res) => {
             });
         }
 
+        // Giới hạn limit tối đa 100
+        const maxLimit = 100;
+        const actualLimit = Math.min(parseInt(limit) || 20, maxLimit);
+
         const filter = {
             userId,
         };
 
         if (type) filter.type = type;
-        if (categoryId) filter.categoryId = categoryId;
+        
+        // Filter by category name (priority over categoryId)
+        if (categoryName && categoryName !== 'all') {
+            const Category = require('../models/Category');
+            const category = await Category.findOne({ name: categoryName });
+            if (category) {
+                filter.categoryId = category._id;
+            } else {
+                // If category not found, return empty results
+                return res.status(200).json({
+                    success: true,
+                    data: {
+                        transactions: [],
+                        pagination: {
+                            page: parseInt(page),
+                            limit: actualLimit,
+                            total: 0,
+                            totalPages: 0
+                        }
+                    }
+                });
+            }
+        } else if (categoryId && categoryId !== 'all') {
+            filter.categoryId = categoryId;
+        }
+        
         if (startDate || endDate) {
             filter.transactionDate = {};
             if (startDate) filter.transactionDate.$gte = new Date(startDate);
             if (endDate) filter.transactionDate.$lte = new Date(endDate);
         }
 
-        const skip = (page - 1) * limit;
+        // Search in description
+        if (search) {
+            filter.$or = [
+                { description: { $regex: search, $options: 'i' } }
+            ];
+        }
+
+        const skip = (page - 1) * actualLimit;
         const transactions = await Transaction.find(filter)
             .populate('categoryId', 'name icon color type')
             .populate('walletId', 'name type color')
             .sort({ transactionDate: -1 })
             .skip(skip)
-            .limit(parseInt(limit));
+            .limit(actualLimit);
 
         const total = await Transaction.countDocuments(filter);
 
@@ -87,9 +123,9 @@ router.get('/', async (req, res) => {
                 transactions,
                 pagination: {
                     page: parseInt(page),
-                    limit: parseInt(limit),
+                    limit: actualLimit,
                     total,
-                    totalPages: Math.ceil(total / limit)
+                    totalPages: Math.ceil(total / actualLimit)
                 }
             }
         });

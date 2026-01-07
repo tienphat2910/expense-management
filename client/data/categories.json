@@ -36,6 +36,21 @@
       "color": "#84cc16"
     },
     {
+      "name": "Bán hàng",
+      "icon": "ShoppingCart",
+      "color": "#10b981"
+    },
+    {
+      "name": "Freelance",
+      "icon": "Laptop",
+      "color": "#f59e0b"
+    },
+    {
+      "name": "Quảng cáo",
+      "icon": "Megaphone",
+      "color": "#3b82f6"
+    },
+    {
       "name": "Khác",
       "icon": "DollarSign",
       "color": "#6b7280"
@@ -121,6 +136,26 @@
       "name": "Thú cưng",
       "icon": "PawPrint",
       "color": "#fb923c"
+    },
+    {
+      "name": "Đồ điện tử",
+      "icon": "Monitor",
+      "color": "#ef4444"
+    },
+    {
+      "name": "Thuốc men",
+      "icon": "Pill",
+      "color": "#ec4899"
+    },
+    {
+      "name": "Sửa chữa",
+      "icon": "Wrench",
+      "color": "#f97316"
+    },
+    {
+      "name": "Phí dịch vụ",
+      "icon": "CreditCard",
+      "color": "#8b5cf6"
     },
     {
       "name": "Khác",

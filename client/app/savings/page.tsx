@@ -18,6 +18,13 @@ import {
   ArrowUpCircle,
   MoreVertical,
   Eye,
+  Users,
+  Copy,
+  Link as LinkIcon,
+  Search,
+  X,
+  UserPlus,
+  Loader2,
 } from 'lucide-react';
 import Header from '@/components/Layout/Header';
 import Footer from '@/components/Layout/Footer';
@@ -36,6 +43,19 @@ interface SavingsGoal {
   color: string;
   progress: number;
   createdAt: string;
+  isShared?: boolean;
+  members?: Array<{
+    userId: {
+      _id: string;
+      username: string;
+      email: string;
+      fullName?: string;
+    };
+    role: 'owner' | 'member';
+    contributedAmount: number;
+    joinedAt: string;
+  }>;
+  inviteToken?: string;
 }
 
 interface WalletType {
@@ -53,9 +73,14 @@ export default function SavingsPage() {
   const [totalSaved, setTotalSaved] = useState(0);
   const [showModal, setShowModal] = useState(false);
   const [showTransactionModal, setShowTransactionModal] = useState(false);
+  const [showInviteModal, setShowInviteModal] = useState(false);
   const [transactionType, setTransactionType] = useState<'deposit' | 'withdraw'>('deposit');
   const [selectedSaving, setSelectedSaving] = useState<SavingsGoal | null>(null);
   const [editingSaving, setEditingSaving] = useState<SavingsGoal | null>(null);
+  const [inviteLink, setInviteLink] = useState('');
+  const [searchUsername, setSearchUsername] = useState('');
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searchingUsers, setSearchingUsers] = useState(false);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -220,8 +245,93 @@ export default function SavingsPage() {
   const openTransactionModal = (saving: SavingsGoal, type: 'deposit' | 'withdraw') => {
     setSelectedSaving(saving);
     setTransactionType(type);
-    setSelectedWalletId('');
     setShowTransactionModal(true);
+  };
+
+  const handleGenerateInviteLink = async (saving: SavingsGoal) => {
+    setSelectedSaving(saving);
+    try {
+      const response = await api.savings.generateInvite(saving._id);
+      if (response.success) {
+        setInviteLink(response.data.inviteUrl);
+        setShowInviteModal(true);
+        toast.success('Tạo link mời thành công!');
+      } else {
+        toast.error(response.message || 'Không thể tạo link mời');
+      }
+    } catch (error) {
+      console.error('Error generating invite:', error);
+      toast.error('Có lỗi xảy ra!');
+    }
+  };
+
+  const handleCopyInviteLink = () => {
+    navigator.clipboard.writeText(inviteLink);
+    toast.success('Đã sao chép link!');
+  };
+
+  const handleSearchUsers = async (query: string) => {
+    setSearchUsername(query);
+    if (query.length < 2) {
+      setSearchResults([]);
+      return;
+    }
+
+    setSearchingUsers(true);
+    try {
+      const user = api.getUser();
+      console.log('Searching for:', query, 'excluding userId:', user?._id);
+      const response = await api.savings.searchUsers(query, user?._id);
+      console.log('Search response:', response);
+      if (response.success) {
+        setSearchResults(response.data);
+        console.log('Search results:', response.data);
+      } else {
+        console.error('Search failed:', response.message);
+      }
+    } catch (error) {
+      console.error('Error searching users:', error);
+    } finally {
+      setSearchingUsers(false);
+    }
+  };
+
+  const handleInviteUser = async (userId: string) => {
+    if (!selectedSaving) return;
+
+    try {
+      const response = await api.savings.inviteUser(selectedSaving._id, userId);
+      if (response.success) {
+        toast.success('Mời thành viên thành công!');
+        setSearchUsername('');
+        setSearchResults([]);
+        await loadData();
+      } else {
+        toast.error(response.message || 'Không thể mời thành viên');
+      }
+    } catch (error: any) {
+      console.error('Error inviting user:', error);
+      toast.error(error?.response?.data?.message || 'Có lỗi xảy ra!');
+    }
+  };
+
+  const handleRemoveMember = async (userId: string) => {
+    if (!selectedSaving) return;
+    
+    if (!confirm('Bạn có chắc muốn xóa thành viên này?')) return;
+
+    try {
+      const response = await api.savings.removeMember(selectedSaving._id, userId);
+      if (response.success) {
+        toast.success('Xóa thành viên thành công!');
+        await loadData();
+      } else {
+        toast.error(response.message || 'Không thể xóa thành viên');
+      }
+    } catch (error) {
+      console.error('Error removing member:', error);
+      toast.error('Có lỗi xảy ra!');
+    }
   };
 
   const formatCurrency = (amount: number) => {
@@ -368,6 +478,16 @@ export default function SavingsPage() {
                         >
                           <Eye className="w-4 h-4" />
                           Xem chi tiết
+                        </button>
+                        <button
+                          onClick={() => {
+                            handleGenerateInviteLink(saving);
+                            setOpenMenuId(null);
+                          }}
+                          className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        >
+                          <Users className="w-4 h-4" />
+                          Mời thành viên
                         </button>
                         <button
                           onClick={() => {
@@ -656,6 +776,147 @@ export default function SavingsPage() {
                   {transactionType === 'deposit' ? 'Nạp tiền' : 'Rút tiền'}
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Invite Members Modal */}
+      {showInviteModal && selectedSaving && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                <Users className="w-6 h-6" />
+                Mời thành viên
+              </h2>
+              <button
+                onClick={() => {
+                  setShowInviteModal(false);
+                  setInviteLink('');
+                  setSearchUsername('');
+                  setSearchResults([]);
+                }}
+                className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-6">
+              {/* Invite Link */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Link mời
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    readOnly
+                    value={inviteLink}
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-sm"
+                  />
+                  <button
+                    onClick={handleCopyInviteLink}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                  >
+                    <Copy className="w-4 h-4" />
+                    Sao chép
+                  </button>
+                </div>
+                <p className="mt-2 text-xs text-gray-500">
+                  Link có hiệu lực trong 7 ngày. Chia sẻ link này để mời người khác tham gia.
+                </p>
+              </div>
+
+              <div className="border-t border-gray-200 pt-4">
+                <p className="text-sm text-gray-600 text-center mb-4">hoặc</p>
+              </div>
+
+              {/* Search Users */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Tìm kiếm theo username
+                </label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <input
+                    type="text"
+                    value={searchUsername}
+                    onChange={(e) => handleSearchUsers(e.target.value)}
+                    placeholder="Nhập username..."
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+
+                {/* Search Results */}
+                {searchingUsers && (
+                  <div className="mt-4 text-center">
+                    <Loader2 className="w-5 h-5 animate-spin inline-block text-blue-600" />
+                  </div>
+                )}
+
+                {searchResults.length > 0 && (
+                  <div className="mt-4 space-y-2 max-h-60 overflow-y-auto">
+                    {searchResults.map((user) => (
+                      <div
+                        key={user._id}
+                        className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50"
+                      >
+                        <div>
+                          <p className="font-medium text-gray-900">{user.username}</p>
+                          <p className="text-sm text-gray-500">{user.email}</p>
+                        </div>
+                        <button
+                          onClick={() => handleInviteUser(user._id)}
+                          className="px-3 py-1.5 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors flex items-center gap-1"
+                        >
+                          <UserPlus className="w-4 h-4" />
+                          Mời
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {searchUsername.length >= 2 && !searchingUsers && searchResults.length === 0 && (
+                  <p className="mt-4 text-sm text-gray-500 text-center">
+                    Không tìm thấy user nào
+                  </p>
+                )}
+              </div>
+
+              {/* Current Members */}
+              {selectedSaving.members && selectedSaving.members.length > 0 && (
+                <div className="border-t border-gray-200 pt-4">
+                  <h3 className="text-sm font-medium text-gray-700 mb-3">
+                    Thành viên ({selectedSaving.members.length})
+                  </h3>
+                  <div className="space-y-2">
+                    {selectedSaving.members.map((member) => (
+                      <div
+                        key={member.userId._id}
+                        className="flex items-center justify-between p-3 border border-gray-200 rounded-lg"
+                      >
+                        <div>
+                          <p className="font-medium text-gray-900">{member.userId.username}</p>
+                          <p className="text-xs text-gray-500">
+                            {member.role === 'owner' ? 'Chủ sở hữu' : 'Thành viên'}
+                          </p>
+                        </div>
+                        {member.role !== 'owner' && (
+                          <button
+                            onClick={() => handleRemoveMember(member.userId._id)}
+                            className="text-red-600 hover:text-red-700 text-sm"
+                          >
+                            Xóa
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -33,6 +33,7 @@ app.use('/api/statistics', require('./routes/statistics'));
 app.use('/api/wallets', require('./routes/wallets'));
 app.use('/api/savings', require('./routes/savings'));
 app.use('/api/settings', require('./routes/settings'));
+app.use('/api/notifications', require('./routes/notifications'));
 
 // Kết nối MongoDB
 const MONGO_URI = process.env.MONGO_URI;
