@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { api } from '@/lib/api';
 import toast, { Toaster } from 'react-hot-toast';
+import PageTransition from '@/components/Animations/PageTransition';
 import { Users, Loader2 } from 'lucide-react';
 
 export default function JoinSavingsPage() {
@@ -63,43 +64,45 @@ export default function JoinSavingsPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-8">
-        <div className="text-center mb-6">
-          <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Users className="w-8 h-8 text-blue-600" />
+      <PageTransition className="max-w-md w-full">
+        <div className="bg-white rounded-xl shadow-lg p-8">
+          <div className="text-center mb-6">
+            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Users className="w-8 h-8 text-blue-600" />
+            </div>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">
+              Lời mời tham gia tiết kiệm
+            </h1>
+            <p className="text-gray-600">
+              Bạn đã được mời tham gia góp quỹ tiết kiệm cùng
+            </p>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            Lời mời tham gia tiết kiệm
-          </h1>
-          <p className="text-gray-600">
-            Bạn đã được mời tham gia góp quỹ tiết kiệm cùng
-          </p>
-        </div>
 
-        <div className="space-y-4">
-          <button
-            onClick={handleJoin}
-            disabled={joining}
-            className="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-          >
-            {joining ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin" />
-                Đang tham gia...
-              </>
-            ) : (
-              'Tham gia ngay'
-            )}
-          </button>
-          
-          <button
-            onClick={() => router.push('/savings')}
-            className="w-full py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            Quay lại
-          </button>
+          <div className="space-y-4">
+            <button
+              onClick={handleJoin}
+              disabled={joining}
+              className="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              {joining ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Đang tham gia...
+                </>
+              ) : (
+                'Tham gia ngay'
+              )}
+            </button>
+            
+            <button
+              onClick={() => router.push('/savings')}
+              className="w-full py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              Quay lại
+            </button>
+          </div>
         </div>
-      </div>
+      </PageTransition>
 
       <Toaster position="top-right" />
     </div>

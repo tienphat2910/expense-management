@@ -5,6 +5,9 @@ import { useRouter } from 'next/navigation';
 import toast, { Toaster } from 'react-hot-toast';
 import { api } from '@/lib/api';
 import MoneyInput from '@/components/MoneyInput';
+import PageTransition from '@/components/Animations/PageTransition';
+import AnimatedSection from '@/components/Animations/AnimatedSection';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Plus,
   PiggyBank,
@@ -94,6 +97,9 @@ export default function SavingsPage() {
   const [selectedWalletId, setSelectedWalletId] = useState('');
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const [buttonPosition, setButtonPosition] = useState({ x: 0, y: 0 });
+  const [transactionButtonPosition, setTransactionButtonPosition] = useState({ x: 0, y: 0 });
+  const [inviteButtonPosition, setInviteButtonPosition] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -383,14 +389,20 @@ export default function SavingsPage() {
       <Header />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 py-8">
-        {/* Header Section */}
-        <div className="mb-8 flex items-center justify-between">
+        <PageTransition>
+          {/* Header Section */}
+          <AnimatedSection className="mb-8 flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Tiết kiệm</h1>
             <p className="text-gray-600">Thêm mục tiêu tiết kiệm</p>
           </div>
           <button
-            onClick={() => {
+            onClick={(e) => {
+              const rect = e.currentTarget.getBoundingClientRect();
+              setButtonPosition({
+                x: rect.left + rect.width / 2,
+                y: rect.top + rect.height / 2
+              });
               resetForm();
               setShowModal(true);
             }}
@@ -399,10 +411,10 @@ export default function SavingsPage() {
             <Plus className="w-5 h-5" />
             <span>Thêm mục tiêu</span>
           </button>
-        </div>
+        </AnimatedSection>
 
         {/* Total Saved Card */}
-        <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg p-6 text-white mb-8">
+        <AnimatedSection delay={0.1} className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg p-6 text-white mb-8">
           <div className="flex items-center justify-between">
             <div>
               <div className="flex items-center gap-2 mb-2">
@@ -418,7 +430,7 @@ export default function SavingsPage() {
               </p>
             </div>
           </div>
-        </div>
+        </AnimatedSection>
 
         {/* Savings Goals List */}
         {savings.length === 0 ? (
@@ -480,7 +492,12 @@ export default function SavingsPage() {
                           Xem chi tiết
                         </button>
                         <button
-                          onClick={() => {
+                          onClick={(e) => {
+                            const rect = e.currentTarget.getBoundingClientRect();
+                            setInviteButtonPosition({
+                              x: rect.left + rect.width / 2,
+                              y: rect.top + rect.height / 2
+                            });
                             handleGenerateInviteLink(saving);
                             setOpenMenuId(null);
                           }}
@@ -560,14 +577,28 @@ export default function SavingsPage() {
                 {saving.status === 'active' && (
                   <div className="flex gap-2">
                     <button
-                      onClick={() => openTransactionModal(saving, 'deposit')}
+                      onClick={(e) => {
+                        const rect = e.currentTarget.getBoundingClientRect();
+                        setTransactionButtonPosition({
+                          x: rect.left + rect.width / 2,
+                          y: rect.top + rect.height / 2
+                        });
+                        openTransactionModal(saving, 'deposit');
+                      }}
                       className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors"
                     >
                       <ArrowDownCircle className="w-4 h-4" />
                       <span className="text-sm font-medium">Nạp</span>
                     </button>
                     <button
-                      onClick={() => openTransactionModal(saving, 'withdraw')}
+                      onClick={(e) => {
+                        const rect = e.currentTarget.getBoundingClientRect();
+                        setTransactionButtonPosition({
+                          x: rect.left + rect.width / 2,
+                          y: rect.top + rect.height / 2
+                        });
+                        openTransactionModal(saving, 'withdraw');
+                      }}
                       disabled={saving.currentAmount === 0}
                       className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
@@ -580,12 +611,51 @@ export default function SavingsPage() {
             ))}
           </div>
         )}
+        </PageTransition>
       </main>
 
       {/* Create/Edit Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
+      <AnimatePresence>
+        {showModal && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50"
+              onClick={() => {
+                setShowModal(false);
+                resetForm();
+              }}
+            />
+            <div className="fixed inset-0 flex items-center justify-center p-4 z-50 pointer-events-none">
+              <motion.div
+                initial={{ 
+                  opacity: 0,
+                  scale: 0,
+                  x: buttonPosition.x - window.innerWidth / 2,
+                  y: buttonPosition.y - window.innerHeight / 2
+                }}
+                animate={{ 
+                  opacity: 1,
+                  scale: 1,
+                  x: 0,
+                  y: 0
+                }}
+                exit={{ 
+                  opacity: 0,
+                  scale: 0,
+                  x: buttonPosition.x - window.innerWidth / 2,
+                  y: buttonPosition.y - window.innerHeight / 2
+                }}
+                transition={{ 
+                  duration: 0.3,
+                  ease: [0.34, 1.56, 0.64, 1]
+                }}
+                className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto pointer-events-auto shadow-2xl"
+                onClick={(e) => e.stopPropagation()}
+              >
             <div className="flex items-center justify-between p-6 border-b border-gray-200">
               <h2 className="text-xl font-bold text-gray-900">
                 {editingSaving ? 'Chỉnh sửa mục tiết kiệm' : 'Tạo mục tiết kiệm mới'}
@@ -688,14 +758,55 @@ export default function SavingsPage() {
                 </button>
               </div>
             </form>
-          </div>
+          </motion.div>
         </div>
-      )}
+          </>
+        )}
+      </AnimatePresence>
 
       {/* Transaction Modal */}
-      {showTransactionModal && selectedSaving && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-md w-full">
+      <AnimatePresence>
+        {showTransactionModal && selectedSaving && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50"
+              onClick={() => {
+                setShowTransactionModal(false);
+                setTransactionAmount('');
+                setSelectedWalletId('');
+              }}
+            />
+            <div className="fixed inset-0 flex items-center justify-center p-4 z-50 pointer-events-none">
+              <motion.div
+                initial={{ 
+                  opacity: 0,
+                  scale: 0,
+                  x: transactionButtonPosition.x - window.innerWidth / 2,
+                  y: transactionButtonPosition.y - window.innerHeight / 2
+                }}
+                animate={{ 
+                  opacity: 1,
+                  scale: 1,
+                  x: 0,
+                  y: 0
+                }}
+                exit={{ 
+                  opacity: 0,
+                  scale: 0,
+                  x: transactionButtonPosition.x - window.innerWidth / 2,
+                  y: transactionButtonPosition.y - window.innerHeight / 2
+                }}
+                transition={{ 
+                  duration: 0.3,
+                  ease: [0.34, 1.56, 0.64, 1] as [number, number, number, number]
+                }}
+                className="bg-white rounded-lg max-w-md w-full pointer-events-auto shadow-2xl"
+                onClick={(e) => e.stopPropagation()}
+              >
             <div className="flex items-center justify-between p-6 border-b border-gray-200">
               <h2 className="text-xl font-bold text-gray-900">
                 {transactionType === 'deposit' ? 'Nạp tiền vào tiết kiệm' : 'Rút tiền từ tiết kiệm'}
@@ -777,14 +888,54 @@ export default function SavingsPage() {
                 </button>
               </div>
             </div>
-          </div>
+          </motion.div>
         </div>
-      )}
+          </>
+        )}
+      </AnimatePresence>
 
-      {/* Invite Members Modal */}
-      {showInviteModal && selectedSaving && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
+      {/* Invite Modal */}
+      <AnimatePresence>
+        {showInviteModal && selectedSaving && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50"
+              onClick={() => {
+                setShowInviteModal(false);
+                setInviteLink('');
+              }}
+            />
+            <div className="fixed inset-0 flex items-center justify-center p-4 z-50 pointer-events-none">
+              <motion.div
+                initial={{ 
+                  opacity: 0,
+                  scale: 0,
+                  x: inviteButtonPosition.x - window.innerWidth / 2,
+                  y: inviteButtonPosition.y - window.innerHeight / 2
+                }}
+                animate={{ 
+                  opacity: 1,
+                  scale: 1,
+                  x: 0,
+                  y: 0
+                }}
+                exit={{ 
+                  opacity: 0,
+                  scale: 0,
+                  x: inviteButtonPosition.x - window.innerWidth / 2,
+                  y: inviteButtonPosition.y - window.innerHeight / 2
+                }}
+                transition={{ 
+                  duration: 0.3,
+                  ease: [0.34, 1.56, 0.64, 1] as [number, number, number, number]
+                }}
+                className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto pointer-events-auto shadow-2xl"
+                onClick={(e) => e.stopPropagation()}
+              >
             <div className="flex items-center justify-between p-6 border-b border-gray-200">
               <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
                 <Users className="w-6 h-6" />
@@ -918,9 +1069,11 @@ export default function SavingsPage() {
                 </div>
               )}
             </div>
-          </div>
+          </motion.div>
         </div>
-      )}
+          </>
+        )}
+      </AnimatePresence>
 
       <Toaster
         position="top-right"

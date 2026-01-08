@@ -7,6 +7,10 @@ import Header from "@/components/Layout/Header";
 import Footer from "@/components/Layout/Footer";
 import StatsCard from "@/components/Dashboard/StatsCard";
 import RecentTransactions from "@/components/Dashboard/RecentTransactions";
+import PageTransition from "@/components/Animations/PageTransition";
+import AnimatedSection from "@/components/Animations/AnimatedSection";
+import StaggerContainer, { itemVariants } from "@/components/Animations/StaggerContainer";
+import { motion } from "framer-motion";
 import { api } from "@/lib/api";
 
 export default function Home() {
@@ -70,53 +74,62 @@ export default function Home() {
       <Header />
 
       <main className="flex-1">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Welcome Section */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              Trang chủ
-            </h1>
-            <p className="text-gray-600">
-              Chào mừng bạn trở lại! Đây là tổng quan về tình hình tài chính của bạn.
-            </p>
-          </div>
+        <PageTransition>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            {/* Welcome Section */}
+            <AnimatedSection className="mb-8">
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                Trang chủ
+              </h1>
+              <p className="text-gray-600">
+                Chào mừng bạn trở lại! Đây là tổng quan về tình hình tài chính của bạn.
+              </p>
+            </AnimatedSection>
 
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <StatsCard
-              title="Tổng thu nhập"
-              value={isLoading ? "..." : formatCurrency(stats.totalIncome)}
-              icon={TrendingUp}
-              iconBgColor="bg-green-100"
-              iconColor="text-green-600"
-            />
-            <StatsCard
-              title="Tổng chi tiêu"
-              value={isLoading ? "..." : formatCurrency(stats.totalExpense)}
-              icon={TrendingDown}
-              iconBgColor="bg-red-100"
-              iconColor="text-red-600"
-            />
-            <StatsCard
-              title="Số dư"
-              value={isLoading ? "..." : formatCurrency(stats.balance)}
-              icon={Wallet}
-              iconBgColor="bg-blue-100"
-              iconColor="text-blue-600"
-            />
-            <StatsCard
-              title="Giao dịch"
-              value={isLoading ? "..." : stats.transactionCount}
-              icon={DollarSign}
-              iconBgColor="bg-purple-100"
-              iconColor="text-purple-600"
-            />
-          </div>
+            {/* Stats Cards */}
+            <StaggerContainer className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              <motion.div variants={itemVariants}>
+                <StatsCard
+                  title="Tổng thu nhập"
+                  value={isLoading ? "..." : formatCurrency(stats.totalIncome)}
+                  icon={TrendingUp}
+                  iconBgColor="bg-green-100"
+                  iconColor="text-green-600"
+                />
+              </motion.div>
+              <motion.div variants={itemVariants}>
+                <StatsCard
+                  title="Tổng chi tiêu"
+                  value={isLoading ? "..." : formatCurrency(stats.totalExpense)}
+                  icon={TrendingDown}
+                  iconBgColor="bg-red-100"
+                  iconColor="text-red-600"
+                />
+              </motion.div>
+              <motion.div variants={itemVariants}>
+                <StatsCard
+                  title="Số dư"
+                  value={isLoading ? "..." : formatCurrency(stats.balance)}
+                  icon={Wallet}
+                  iconBgColor="bg-blue-100"
+                  iconColor="text-blue-600"
+                />
+              </motion.div>
+              <motion.div variants={itemVariants}>
+                <StatsCard
+                  title="Giao dịch"
+                  value={isLoading ? "..." : stats.transactionCount}
+                  icon={DollarSign}
+                  iconBgColor="bg-purple-100"
+                  iconColor="text-purple-600"
+                />
+              </motion.div>
+            </StaggerContainer>
 
-          {/* Quick Actions */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Thao tác nhanh</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {/* Quick Actions */}
+            <AnimatedSection delay={0.3} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Thao tác nhanh</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <button
                 onClick={() => router.push("/transactions")}
                 className="flex flex-col items-center justify-center p-4 rounded-lg border-2 border-dashed border-gray-300 hover:border-green-500 hover:bg-green-50 transition-colors"
@@ -146,13 +159,14 @@ export default function Home() {
                 <span className="text-sm font-medium text-gray-700">Xem thống kê</span>
               </button>
             </div>
-          </div>
+            </AnimatedSection>
 
-          {/* Recent Transactions */}
-          <div>
-            <RecentTransactions transactions={recentTransactions} />
+            {/* Recent Transactions */}
+            <AnimatedSection delay={0.4}>
+              <RecentTransactions transactions={recentTransactions} />
+            </AnimatedSection>
           </div>
-        </div>
+        </PageTransition>
       </main>
 
       <Footer />

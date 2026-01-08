@@ -15,6 +15,8 @@ import {
 } from 'lucide-react';
 import Header from '@/components/Layout/Header';
 import Footer from '@/components/Layout/Footer';
+import PageTransition from '@/components/Animations/PageTransition';
+import AnimatedSection from '@/components/Animations/AnimatedSection';
 
 interface UserProfile {
   _id: string;
@@ -180,14 +182,15 @@ export default function ProfilePage() {
       <Header />
       
       <main className="flex-1 max-w-4xl w-full mx-auto px-4 py-8">
-        {/* Header Section */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Thông tin cá nhân</h1>
-          <p className="text-gray-600">Quản lý thông tin tài khoản và bảo mật</p>
-        </div>
+        <PageTransition>
+          {/* Header Section */}
+          <AnimatedSection className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Thông tin cá nhân</h1>
+            <p className="text-gray-600">Quản lý thông tin tài khoản và bảo mật</p>
+          </AnimatedSection>
 
-        {/* Profile Card */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+          {/* Profile Card */}
+          <AnimatedSection delay={0.2} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
           <div className="flex items-center gap-6 mb-6 pb-6 border-b border-gray-200">
             <div className="relative">
               <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white text-3xl font-bold">
@@ -387,7 +390,8 @@ export default function ProfilePage() {
               </div>
             </form>
           )}
-        </div>
+          </AnimatedSection>
+        </PageTransition>
       </main>
 
       <Toaster 

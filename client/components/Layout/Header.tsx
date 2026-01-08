@@ -3,11 +3,12 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { Menu, X, User, LogOut, Settings, ChevronDown, Bell } from "lucide-react";
 import { api } from "@/lib/api";
 import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale";
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface UserData {
   username: string;
@@ -40,6 +41,7 @@ interface Notification {
 
 export default function Header() {
   const router = useRouter();
+  const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
@@ -49,12 +51,28 @@ export default function Header() {
   const profileMenuRef = useRef<HTMLDivElement>(null);
   const notificationRef = useRef<HTMLDivElement>(null);
 
+  const loadNotifications = async () => {
+    try {
+      const response = await api.notifications.getAll();
+      if (response.success) {
+        setNotifications(response.data.notifications);
+        setUnreadCount(response.data.unreadCount);
+      }
+    } catch (error) {
+      console.error('Error loading notifications:', error);
+    }
+  };
+
   useEffect(() => {
-    loadNotifications();
+    // Initial load
+    void loadNotifications();
     
     // Refresh notifications every 30 seconds
-    const interval = setInterval(loadNotifications, 30000);
+    const interval = setInterval(() => {
+      void loadNotifications();
+    }, 30000);
     return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -71,18 +89,6 @@ export default function Header() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-
-  const loadNotifications = async () => {
-    try {
-      const response = await api.notifications.getAll();
-      if (response.success) {
-        setNotifications(response.data.notifications);
-        setUnreadCount(response.data.unreadCount);
-      }
-    } catch (error) {
-      console.error('Error loading notifications:', error);
-    }
-  };
 
   const handleNotificationClick = async (notification: Notification) => {
     // Don't navigate if it's a pending invite
@@ -147,6 +153,13 @@ export default function Header() {
     router.push("/sign-in");
   };
 
+  const isActive = (href: string) => {
+    if (href === '/') {
+      return pathname === '/';
+    }
+    return pathname.startsWith(href);
+  };
+
   const navLinks = [
     { href: "/", label: "Trang chủ" },
     { href: "/transactions", label: "Giao dịch" },
@@ -179,7 +192,11 @@ export default function Header() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors"
+                className={`px-3 py-2 text-sm font-medium transition-colors ${
+                  isActive(link.href)
+                    ? 'text-blue-600 border-b-2 border-blue-600'
+                    : 'text-gray-700 hover:text-blue-600'
+                }`}
               >
                 {link.label}
               </Link>
@@ -203,8 +220,15 @@ export default function Header() {
               </button>
 
               {/* Notification Dropdown */}
-              {isNotificationOpen && (
-                <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 max-h-96 overflow-hidden flex flex-col">
+              <AnimatePresence>
+                {isNotificationOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                    transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
+                    className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 max-h-96 overflow-hidden flex flex-col"
+                  >
                   <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
                     <h3 className="font-semibold text-gray-900">Thông báo</h3>
                     {unreadCount > 0 && (
@@ -287,8 +311,9 @@ export default function Header() {
                       ))
                     )}
                   </div>
-                </div>
-              )}
+                </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
             <div className="relative" ref={profileMenuRef}>
@@ -304,8 +329,15 @@ export default function Header() {
               </button>
 
               {/* Profile Dropdown */}
-              {isProfileMenuOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 border border-gray-200">
+              <AnimatePresence>
+                {isProfileMenuOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                    transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
+                    className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 border border-gray-200"
+                  >
                   <Link
                     href="/profile"
                     className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
@@ -330,8 +362,9 @@ export default function Header() {
                     <LogOut className="w-4 h-4 mr-2" />
                     Đăng xuất
                   </button>
-                </div>
-              )}
+                </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
 
@@ -345,46 +378,155 @@ export default function Header() {
         </div>
 
         {/* Mobile Navigation */}
-        {isMobileMenuOpen && (
-          <div className="md:hidden py-4 border-t border-gray-200">
+        <AnimatePresence>
+          {isMobileMenuOpen && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+              className="md:hidden overflow-hidden"
+            >
+              <motion.div 
+                className="py-4 border-t border-gray-200"
+                initial="closed"
+                animate="open"
+                exit="closed"
+                variants={{
+                  open: {
+                    transition: { staggerChildren: 0.07, delayChildren: 0.1 }
+                  },
+                  closed: {
+                    transition: { staggerChildren: 0.05, staggerDirection: -1 }
+                  }
+                }}
+              >
             <div className="flex flex-col space-y-1">
               {navLinks.map((link) => (
-                <Link
+                <motion.div
                   key={link.href}
-                  href={link.href}
-                  className="text-gray-700 hover:bg-gray-100 px-4 py-3 rounded-lg text-sm font-medium"
+                  variants={{
+                    open: {
+                      y: 0,
+                      opacity: 1,
+                      transition: {
+                        y: { stiffness: 1000, velocity: -100 }
+                      }
+                    },
+                    closed: {
+                      y: 20,
+                      opacity: 0,
+                      transition: {
+                        y: { stiffness: 1000 }
+                      }
+                    }
+                  }}
+                >
+                  <Link
+                    href={link.href}
+                    className={`px-4 py-3 rounded-lg text-sm font-medium block ${
+                      isActive(link.href)
+                        ? 'bg-blue-50 text-blue-600 font-semibold'
+                        : 'text-gray-700 hover:bg-gray-100'
+                    }`}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    {link.label}
+                  </Link>
+                </motion.div>
+              ))}
+              <motion.hr 
+                className="my-2"
+                variants={{
+                  open: { opacity: 1, transition: { duration: 0.2 } },
+                  closed: { opacity: 0, transition: { duration: 0.2 } }
+                }}
+              />
+              <motion.div
+                variants={{
+                  open: {
+                    y: 0,
+                    opacity: 1,
+                    transition: {
+                      y: { stiffness: 1000, velocity: -100 }
+                    }
+                  },
+                  closed: {
+                    y: 20,
+                    opacity: 0,
+                    transition: {
+                      y: { stiffness: 1000 }
+                    }
+                  }
+                }}
+              >
+                <Link
+                  href="/profile"
+                  className="flex items-center text-gray-700 hover:bg-gray-100 px-4 py-3 rounded-lg text-sm font-medium"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  {link.label}
+                  <User className="w-4 h-4 mr-2" />
+                  Hồ sơ
                 </Link>
-              ))}
-              <hr className="my-2" />
-              <Link
-                href="/profile"
-                className="flex items-center text-gray-700 hover:bg-gray-100 px-4 py-3 rounded-lg text-sm font-medium"
-                onClick={() => setIsMobileMenuOpen(false)}
+              </motion.div>
+              <motion.div
+                variants={{
+                  open: {
+                    y: 0,
+                    opacity: 1,
+                    transition: {
+                      y: { stiffness: 1000, velocity: -100 }
+                    }
+                  },
+                  closed: {
+                    y: 20,
+                    opacity: 0,
+                    transition: {
+                      y: { stiffness: 1000 }
+                    }
+                  }
+                }}
               >
-                <User className="w-4 h-4 mr-2" />
-                Hồ sơ
-              </Link>
-              <Link
-                href="/settings"
-                className="flex items-center text-gray-700 hover:bg-gray-100 px-4 py-3 rounded-lg text-sm font-medium"
-                onClick={() => setIsMobileMenuOpen(false)}
+                <Link
+                  href="/settings"
+                  className="flex items-center text-gray-700 hover:bg-gray-100 px-4 py-3 rounded-lg text-sm font-medium"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <Settings className="w-4 h-4 mr-2" />
+                  Cài đặt
+                </Link>
+              </motion.div>
+              <motion.div
+                variants={{
+                  open: {
+                    y: 0,
+                    opacity: 1,
+                    transition: {
+                      y: { stiffness: 1000, velocity: -100 }
+                    }
+                  },
+                  closed: {
+                    y: 20,
+                    opacity: 0,
+                    transition: {
+                      y: { stiffness: 1000 }
+                    }
+                  }
+                }}
               >
-                <Settings className="w-4 h-4 mr-2" />
-                Cài đặt
-              </Link>
-              <button
-                onClick={handleLogout}
-                className="flex items-center text-red-600 hover:bg-red-50 px-4 py-3 rounded-lg text-sm font-medium w-full text-left"
-              >
-                <LogOut className="w-4 h-4 mr-2" />
-                Đăng xuất
-              </button>
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center text-red-600 hover:bg-red-50 px-4 py-3 rounded-lg text-sm font-medium w-full text-left"
+                >
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Đăng xuất
+                </button>
+              </motion.div>
             </div>
-          </div>
-        )}
+          </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </header>
   );

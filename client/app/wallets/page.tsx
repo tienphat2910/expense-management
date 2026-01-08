@@ -5,6 +5,10 @@ import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import toast, { Toaster } from 'react-hot-toast';
 import MoneyInput from '@/components/MoneyInput';
+import PageTransition from '@/components/Animations/PageTransition';
+import AnimatedSection from '@/components/Animations/AnimatedSection';
+import StaggerContainer, { itemVariants } from '@/components/Animations/StaggerContainer';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Plus, 
   Wallet as WalletIcon, 
@@ -70,6 +74,7 @@ export default function WalletsPage() {
   const [editingWallet, setEditingWallet] = useState<Wallet | null>(null);
   const [showBalance, setShowBalance] = useState(true);
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
+  const [buttonPosition, setButtonPosition] = useState({ x: 0, y: 0 });
 
   const [formData, setFormData] = useState({
     name: '',
@@ -193,25 +198,33 @@ export default function WalletsPage() {
       <Header />
       
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 py-8">
-        {/* Header Section */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Ví tiền</h1>
-              <p className="text-gray-600">Quản lý tất cả các ví của bạn</p>
-            </div>
+        <PageTransition>
+          {/* Header Section */}
+          <AnimatedSection className="mb-8">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">Ví tiền</h1>
+                <p className="text-gray-600">Quản lý tất cả các ví của bạn</p>
+              </div>
             <button
-              onClick={() => setShowModal(true)}
+              onClick={(e) => {
+                const rect = e.currentTarget.getBoundingClientRect();
+                setButtonPosition({
+                  x: rect.left + rect.width / 2,
+                  y: rect.top + rect.height / 2
+                });
+                setShowModal(true);
+              }}
               className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
               <Plus className="w-5 h-5" />
               <span>Thêm ví</span>
             </button>
           </div>
-        </div>
+        </AnimatedSection>
 
         {/* Total Balance Card */}
-        <div className="bg-blue-600 text-white rounded-xl p-6 mb-8 shadow-lg">
+        <AnimatedSection delay={0.1} className="bg-blue-600 text-white rounded-xl p-6 mb-8 shadow-lg">
           <div className="flex items-center justify-between mb-2">
             <span className="text-blue-100">Tổng số dư</span>
             <button
@@ -227,7 +240,7 @@ export default function WalletsPage() {
           <p className="text-blue-100 text-sm mt-2">
             {wallets.filter(w => w.isActive).length} ví đang hoạt động
           </p>
-        </div>
+        </AnimatedSection>
 
         {/* Wallets Grid */}
         {loading ? (
@@ -327,12 +340,54 @@ export default function WalletsPage() {
             })}
           </div>
         )}
+        </PageTransition>
       </main>
 
       {/* Add/Edit Wallet Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
+      <AnimatePresence>
+        {showModal && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50"
+              onClick={() => {
+                setShowModal(false);
+                resetForm();
+              }}
+            />
+            
+            {/* Modal */}
+            <div className="fixed inset-0 flex items-center justify-center p-4 z-50 pointer-events-none">
+              <motion.div
+                initial={{ 
+                  opacity: 0,
+                  scale: 0,
+                  x: buttonPosition.x - window.innerWidth / 2,
+                  y: buttonPosition.y - window.innerHeight / 2
+                }}
+                animate={{ 
+                  opacity: 1,
+                  scale: 1,
+                  x: 0,
+                  y: 0
+                }}
+                exit={{ 
+                  opacity: 0,
+                  scale: 0,
+                  x: buttonPosition.x - window.innerWidth / 2,
+                  y: buttonPosition.y - window.innerHeight / 2
+                }}
+                transition={{ 
+                  duration: 0.3,
+                  ease: [0.34, 1.56, 0.64, 1]
+                }}
+                className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto pointer-events-auto shadow-2xl"
+                onClick={(e) => e.stopPropagation()}
+              >
             <div className="flex items-center justify-between p-6 border-b border-gray-200">
               <h2 className="text-xl font-bold text-gray-900">
                 {editingWallet ? 'Sửa ví' : 'Thêm ví mới'}
@@ -438,9 +493,11 @@ export default function WalletsPage() {
                 </button>
               </div>
             </form>
-          </div>
+          </motion.div>
         </div>
-      )}
+          </>
+        )}
+      </AnimatePresence>
 
       <Toaster position="top-right" />
       <Footer />

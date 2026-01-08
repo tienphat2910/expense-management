@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import AnimatedInput from "@/components/Auth/AnimatedInput";
+import PageTransition from "@/components/Animations/PageTransition";
 import { api } from "@/lib/api";
 
 interface FormData {
@@ -118,7 +119,7 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 via-white to-blue-50 p-4">
-      <div className="w-full max-w-md">
+      <PageTransition className="w-full max-w-md">
         <div className="bg-white rounded-2xl shadow-xl p-8">
           {/* Header */}
           <div className="text-center mb-8">
@@ -231,7 +232,7 @@ export default function RegisterPage() {
           </div>
         </div>
 
-      </div>
+      </PageTransition>
     </div>
   );
 }

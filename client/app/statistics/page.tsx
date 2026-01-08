@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import toast, { Toaster } from 'react-hot-toast';
 import { api } from '@/lib/api';
+import PageTransition from '@/components/Animations/PageTransition';
+import AnimatedSection from '@/components/Animations/AnimatedSection';
 import {
   LineChart,
   Line,
@@ -230,11 +232,12 @@ export default function StatisticsPage() {
       <Header />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 py-8">
-        {/* Header Section */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Thống kê</h1>
-          <p className="text-gray-600">Phân tích chi tiết thu chi của bạn</p>
-        </div>
+        <PageTransition>
+          {/* Header Section */}
+          <AnimatedSection className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Thống kê</h1>
+            <p className="text-gray-600">Phân tích chi tiết thu chi của bạn</p>
+          </AnimatedSection>
 
         {/* Filter Section */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
@@ -345,7 +348,7 @@ export default function StatisticsPage() {
               </defs>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="date" />
-              <YAxis />
+              <YAxis width={80} />
               <Tooltip
                 formatter={(value) => formatCurrency(value as number)}
                 contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px' }}
@@ -378,7 +381,7 @@ export default function StatisticsPage() {
             <BarChart data={dailyStats}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="date" />
-              <YAxis />
+              <YAxis width={80} />
               <Tooltip
                 formatter={(value) => formatCurrency(value as number)}
                 contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px' }}
@@ -397,23 +400,28 @@ export default function StatisticsPage() {
             <h2 className="text-xl font-bold text-gray-900 mb-4">Phân bổ thu nhập theo danh mục</h2>
             {incomeCategories.length > 0 ? (
               <>
-                <ResponsiveContainer width="100%" height={250}>
+                <ResponsiveContainer width="100%" height={280}>
                   <PieChart>
                     <Pie
                       data={incomeCategories as any}
                       cx="50%"
                       cy="50%"
-                      labelLine={false}
-                      label={({ name, percent }) => `${name}: ${((percent || 0) * 100).toFixed(0)}%`}
-                      outerRadius={80}
+                      innerRadius={60}
+                      outerRadius={100}
                       fill="#8884d8"
                       dataKey="value"
+                      paddingAngle={2}
+                      label={false}
+                      labelLine={false}
                     >
                       {incomeCategories.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.color || COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
-                    <Tooltip formatter={(value) => formatCurrency(value as number)} />
+                    <Tooltip 
+                      formatter={(value) => formatCurrency(value as number)}
+                      contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px' }}
+                    />
                   </PieChart>
                 </ResponsiveContainer>
                 <div className="mt-4 space-y-2">
@@ -441,23 +449,28 @@ export default function StatisticsPage() {
             <h2 className="text-xl font-bold text-gray-900 mb-4">Phân bổ chi tiêu theo danh mục</h2>
             {expenseCategories.length > 0 ? (
               <>
-                <ResponsiveContainer width="100%" height={250}>
+                <ResponsiveContainer width="100%" height={280}>
                   <PieChart>
                     <Pie
                       data={expenseCategories as any}
                       cx="50%"
                       cy="50%"
-                      labelLine={false}
-                      label={({ name, percent }) => `${name}: ${((percent || 0) * 100).toFixed(0)}%`}
-                      outerRadius={80}
+                      innerRadius={60}
+                      outerRadius={100}
                       fill="#8884d8"
                       dataKey="value"
+                      paddingAngle={2}
+                      label={false}
+                      labelLine={false}
                     >
                       {expenseCategories.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.color || COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
-                    <Tooltip formatter={(value) => formatCurrency(value as number)} />
+                    <Tooltip 
+                      formatter={(value) => formatCurrency(value as number)}
+                      contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px' }}
+                    />
                   </PieChart>
                 </ResponsiveContainer>
                 <div className="mt-4 space-y-2">
@@ -483,12 +496,12 @@ export default function StatisticsPage() {
 
         {/* Balance Line Chart */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Biểu đồ chênh lệch tích lũy</h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Biểu đồ chênh lệch thu chi</h2>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={dailyStats}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="date" />
-              <YAxis />
+              <YAxis width={80} />
               <Tooltip
                 formatter={(value) => formatCurrency(value as number)}
                 contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px' }}
@@ -498,13 +511,15 @@ export default function StatisticsPage() {
                 type="monotone"
                 dataKey="balance"
                 stroke="#3b82f6"
-                strokeWidth={2}
-                dot={{ fill: '#3b82f6', r: 4 }}
+                strokeWidth={3}
+                dot={{ fill: '#3b82f6', r: 5 }}
+                activeDot={{ r: 7 }}
                 name="Chênh lệch"
               />
             </LineChart>
           </ResponsiveContainer>
         </div>
+        </PageTransition>
       </main>
 
       <Toaster

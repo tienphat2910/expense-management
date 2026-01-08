@@ -5,6 +5,8 @@ import { useRouter, useParams } from 'next/navigation';
 import toast, { Toaster } from 'react-hot-toast';
 import { api } from '@/lib/api';
 import MoneyInput from '@/components/MoneyInput';
+import PageTransition from '@/components/Animations/PageTransition';
+import AnimatedSection from '@/components/Animations/AnimatedSection';
 import {
   ArrowLeft,
   PiggyBank,
@@ -270,17 +272,20 @@ export default function SavingsDetailPage() {
       <Header />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 py-8">
-        {/* Back Button */}
-        <button
-          onClick={() => router.back()}
-          className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6"
-        >
-          <ArrowLeft className="w-5 h-5" />
-          <span>Quay lại</span>
-        </button>
+        <PageTransition>
+          {/* Back Button */}
+          <AnimatedSection>
+            <button
+              onClick={() => router.back()}
+              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6"
+            >
+              <ArrowLeft className="w-5 h-5" />
+              <span>Quay lại</span>
+            </button>
+          </AnimatedSection>
 
-        {/* Savings Info Card */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+          {/* Savings Info Card */}
+          <AnimatedSection delay={0.1} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
           <div className="flex items-start justify-between mb-6">
             <div className="flex items-center gap-4">
               <div
@@ -396,10 +401,10 @@ export default function SavingsDetailPage() {
               {saving.deadline ? 'Chỉnh sửa' : 'Đặt hạn'}
             </button>
           </div>
-        </div>
+        </AnimatedSection>
 
         {/* Transaction History */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <AnimatedSection delay={0.2} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-gray-900">Lịch sử giao dịch</h2>
             <div className="flex items-center gap-2">
@@ -512,7 +517,8 @@ export default function SavingsDetailPage() {
               ))}
             </div>
           )}
-        </div>
+        </AnimatedSection>
+        </PageTransition>
       </main>
 
       {/* Transaction Modal */}

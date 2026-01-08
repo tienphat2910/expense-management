@@ -15,6 +15,8 @@ import {
 } from 'lucide-react';
 import Header from '@/components/Layout/Header';
 import Footer from '@/components/Layout/Footer';
+import PageTransition from '@/components/Animations/PageTransition';
+import AnimatedSection from '@/components/Animations/AnimatedSection';
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -67,14 +69,15 @@ export default function SettingsPage() {
       <Header />
 
       <main className="flex-1 max-w-4xl w-full mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Cài đặt</h1>
-          <p className="text-gray-600">Quản lý tài khoản và dữ liệu của bạn</p>
-        </div>
+        <PageTransition>
+          {/* Header */}
+          <AnimatedSection className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Cài đặt</h1>
+            <p className="text-gray-600">Quản lý tài khoản và dữ liệu của bạn</p>
+          </AnimatedSection>
 
-        {/* Account Info */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+          {/* Account Info */}
+          <AnimatedSection delay={0.1} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
               <User className="w-6 h-6 text-blue-600" />
@@ -100,10 +103,10 @@ export default function SettingsPage() {
           >
             Chỉnh sửa hồ sơ
           </button>
-        </div>
+        </AnimatedSection>
 
         {/* Security Section */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+        <AnimatedSection delay={0.2} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
               <Shield className="w-6 h-6 text-green-600" />
@@ -120,10 +123,10 @@ export default function SettingsPage() {
             <LogOut className="w-5 h-5" />
             <span>Đăng xuất</span>
           </button>
-        </div>
+        </AnimatedSection>
 
         {/* Data Management Section */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+        <AnimatedSection delay={0.3} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
               <Database className="w-6 h-6 text-purple-600" />
@@ -152,7 +155,8 @@ export default function SettingsPage() {
             <Trash2 className="w-5 h-5" />
             <span>Xóa tất cả dữ liệu</span>
           </button>
-        </div>
+        </AnimatedSection>
+        </PageTransition>
       </main>
 
       {/* Reset Confirmation Modal */}
